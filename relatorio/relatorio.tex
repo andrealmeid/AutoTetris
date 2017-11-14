@@ -38,7 +38,7 @@ RA: 155943}}
 \maketitle
 
 \section{Resumo}
-Nesse projeto, foram realizados estudos envolvendo técnicas de algoritmos genéticos para encontrar uma solução aproximada para um algoritmo que faça jogadas ideais no jogo \textit{Tetris}.
+Nesse projeto, foram realizados estudos envolvendo técnicas de algoritmos genéticos em redes neurais artificiais para encontrar uma solução aproximada para um algoritmo que faça jogadas ideais no jogo \textit{Tetris}.
 
 \section{Introdução}
 
@@ -68,6 +68,24 @@ Foi provado \cite{b2} que em uma versão de Tetris onde o jogador já conhece to
 Com exceção do terceiro, todos esses objetivos também são difíceis de serem aproximados. 
 
 \subsection{Algoritmos genéticos}
+Um algoritmo genético é uma técnica para encontrar uma solução ideal ou próxima à ideal para um problema computacional, com inspirações nas teorias darwinistas de evolução dos seres vivos. As interações do algoritmo são sobre as gerações, onde uma geração é um conjuto de indivíduos e indivíduos são funções/modelos. Em síntese, um algoritmo genético funciona da seguinte maneira \cite{b3}:
+
+\begin{enumerate}
+\item Os parâmetros dos indivíduos da primeira geração são gerados randomicamente;
+
+\item Algum tipo de função de custo é aplicada para avaliar cada indivíduo. Essa função é usada para determinar o sucesso dos indivíduos;
+
+\item Alguma porcentagem dos melhores indivíduos (segundo seus resultados do item anterior) é escolhida.
+
+\item Os indivíduos escolhidos no item anterior serão os "pais" da nova geração. A partir deles, combinações e mutações irão gerar os outros indivíduos da nova geração.
+
+\item Repita os passos 2-4 até alguma condição de parada for atingida. Quando isso acontecer retorna o melhor indivíduo da última geração.
+
+\end{enumerate}
+
+
+\subsection{Redes neurais artificiais}
+Rede neural artificial é uma coleção de unidades chamadas neurônios que são interligados entre si com uma ordem (camadas), com inspiração biológica no funcionamento do cérebro dos animais. Cada neurônio de uma camada se liga a todos os neurônios da anterior (se não for a camada de entrada) e da posterior (se não for a camada de saída). Cada neurônio é ativado de acordo com uma função de ativação, os parâmetros dessa função de ativação são as saídas dos neurônios anteriores multiplicados por um peso nas arestas que conectam estes neurônios. Nos neurônios de entrada são inseridos metadados e nas funções de saída algum tipo de resposta ou classificação \cite{b4}.\\
 
 \subsection{Aprendizado de máquina para jogos eletrônicos}
 
@@ -84,6 +102,10 @@ Com exceção do terceiro, todos esses objetivos também são difíceis de serem
 \bibitem{b1} \texttt{ \url{http://www.atarihq.com/tsr/special/tetrishist.html}}
 
 \bibitem{b2} Demaine, E. D., Hohenberger, S., \& Liben-Nowell, D. (2003, July). Tetris is hard, even to approximate. In COCOON (pp. 351-363).
+
+\bibitem{b3} Goldberg, D. E. (1989). Genetic Algorithms in Search, Optimization, and Machine Learning.
+
+\bibitem{b4}  Geron, A. (2017). \textit{Hands-on machine learning with Scikit-Learn and TensorFlow: concepts, tools, and techniques to build intelligent systems.}
 
 \end{thebibliography}
 
