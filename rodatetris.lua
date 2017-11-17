@@ -297,7 +297,7 @@ local function handle_input(stats, fall, next_piece, key)
     local new_rot_num = (moving_piece.rot_num % 4) + 1  -- Map 1->2->3->4->1.
     local moves = {[49]  = {x = moving_piece.x - 1},
     [50] = {x = moving_piece.x + 1},
-    [51]    = {rot_num = new_rot_num}}
+    [51] = {rot_num = new_rot_num}}
     if moves[key] then set_moving_piece_if_valid(moves[key]) end
 
     -- Handle the down arrow.
@@ -307,13 +307,27 @@ local function handle_input(stats, fall, next_piece, key)
     end
 end
 
-
-
-
 -- A funcao recebe uma posicao entre [1, 11] e uma rotacao [1, 4] e coloca a peca la
 local function placePiece(position, rotation, stats, fall, next_piece)
-    handle_input(stats, fall, next_piece, 50)
-    handle_input(stats, fall, next_piece, 50)
+    local times = position - 5
+
+    print(position, rotation)
+
+    if times <= 0 then
+        for i = times, 0 do
+            handle_input(stats, fall, next_piece, 49)
+        end
+    else
+        for i = 1, times do
+            handle_input(stats, fall, next_piece, 50)
+        end
+    end
+
+    for i = rotation, 1, -1 do
+        handle_input(stats, fall, next_piece, 51)
+    end
+
+    handle_input(stats, fall, next_piece, 52)
 end
 
 lock_and_update_moving_piece = function(stats, fall, next_piece)
