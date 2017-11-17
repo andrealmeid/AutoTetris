@@ -272,10 +272,51 @@ local function playNN(nextPiece)
     end
     rot_i = rot_i - 11
 
-    print(pos_i, rot_i)
+    return pos_i, rot_i
 end
 
-local function lock_and_update_moving_piece(stats, fall, next_piece)
+local lock_and_update_moving_piece
+
+local function handle_input(stats, fall, next_piece, key)
+    --local key = stdscr:getch()  -- Nonblocking; returns nil if no key was pressed.
+    if key == nil then return end
+
+    if key == tostring('q'):byte(1) then  -- The q key quits.
+        curses.endwin()
+        os.exit(0)
+    end
+
+    if key == tostring('p'):byte(1) then  -- The p key pauses or unpauses.
+        local switch = {playing = 'paused', paused = 'playing'}
+        if switch[game_state] then game_state = switch[game_state] end
+    end
+
+    if game_state ~= 'playing' then return end  -- Arrow keys only work if playing.
+
+    -- Handle the left, right, or up arrows.
+    local new_rot_num = (moving_piece.rot_num % 4) + 1  -- Map 1->2->3->4->1.
+    local moves = {[49]  = {x = moving_piece.x - 1},
+    [50] = {x = moving_piece.x + 1},
+    [51]    = {rot_num = new_rot_num}}
+    if moves[key] then set_moving_piece_if_valid(moves[key]) end
+
+    -- Handle the down arrow.
+    if key == 52 then
+        while set_moving_piece_if_valid({y = moving_piece.y + 1}) do end
+        lock_and_update_moving_piece(stats, fall, next_piece)
+    end
+end
+
+
+
+
+-- A funcao recebe uma posicao entre [1, 11] e uma rotacao [1, 4] e coloca a peca la
+local function placePiece(position, rotation, stats, fall, next_piece)
+    handle_input(stats, fall, next_piece, 50)
+    handle_input(stats, fall, next_piece, 50)
+end
+
+lock_and_update_moving_piece = function(stats, fall, next_piece)
     call_fn_for_xy_in_piece(moving_piece, function (x, y)
         board[x][y] = moving_piece.shape  -- Lock the moving piece in place.
     end)
@@ -307,45 +348,19 @@ local function lock_and_update_moving_piece(stats, fall, next_piece)
     if num_removed > 0 then curses.flash() end
     stats.score = stats.score + num_removed * num_removed
 
-    playNN(next_piece)
-
+    
     -- Bring in the waiting next piece and set up a new next piece.
     moving_piece = {shape = next_piece.shape, rot_num = 1, x = 4, y = 0}
     if not set_moving_piece_if_valid(moving_piece) then
         game_state = 'over'
     end
     next_piece.shape = math.random(#shapes)
+    
+    local pos, rot = playNN(next_piece)
+    placePiece(pos, rot, stats, fall, next_piece)
+
 end
 
-local function handle_input(stats, fall, next_piece)
-    local key = stdscr:getch()  -- Nonblocking; returns nil if no key was pressed.
-    if key == nil then return end
-
-    if key == tostring('q'):byte(1) then  -- The q key quits.
-        curses.endwin()
-        os.exit(0)
-    end
-
-    if key == tostring('p'):byte(1) then  -- The p key pauses or unpauses.
-        local switch = {playing = 'paused', paused = 'playing'}
-        if switch[game_state] then game_state = switch[game_state] end
-    end
-
-    if game_state ~= 'playing' then return end  -- Arrow keys only work if playing.
-
-    -- Handle the left, right, or up arrows.
-    local new_rot_num = (moving_piece.rot_num % 4) + 1  -- Map 1->2->3->4->1.
-    local moves = {[49]  = {x = moving_piece.x - 1},
-    [50] = {x = moving_piece.x + 1},
-    [51]    = {rot_num = new_rot_num}}
-    if moves[key] then set_moving_piece_if_valid(moves[key]) end
-
-    -- Handle the down arrow.
-    if key == 52 then
-        while set_moving_piece_if_valid({y = moving_piece.y + 1}) do end
-        lock_and_update_moving_piece(stats, fall, next_piece)
-    end
-end
 
 local function lower_piece_at_right_time(stats, fall, next_piece)
     -- This function does nothing if the game is paused or over.
@@ -385,13 +400,15 @@ local function loadCL()
     p:close()
 end
 
+
+
 ------------------------------------------------------------------
 -- Main.
 ------------------------------------------------------------------
 
 local function main()
     local stats, fall, colors, next_piece = init()
-
+    
     loadCL()
 
     neural = nn.Sequential()
@@ -403,10 +420,11 @@ local function main()
     nn.ClassNLLCriterion():cl()
 
     while true do  -- Main loop.
-        handle_input(stats, fall, next_piece)
+        local key = stdscr:getch()
+        handle_input(stats, fall, next_piece, key)
         lower_piece_at_right_time(stats, fall, next_piece)
         draw_screen(stats, colors, next_piece)
-
+        --handle_input(stats, fall, next_piece, 51)
         -- Don't poll for input much faster than the display can change.
         local sec, nsec = 0, 5e6  -- 0.005 seconds.
         posix.nanosleep(sec, nsec)
