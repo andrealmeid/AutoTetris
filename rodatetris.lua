@@ -124,9 +124,9 @@ local function set_moving_piece_if_valid(piece)
     return is_valid
 end
 
-local function init()
+local function init(seed)
     -- Use the current time's microseconds as our random seed.
-    math.randomseed(posix.gettimeofday().usec)
+    math.randomseed(seed)
 
     -- Set up the shapes table.
     for s_index, s in ipairs(shapes) do
@@ -252,9 +252,9 @@ local function draw_screen(stats, colors, next_piece)
 end
 
 local function playNN(neural, nextPiece)
-    local input = {}
+    local input = {0,0,0,0,0,0,0}
 
-    table.insert(input, nextPiece.shape)
+    input[nextPiece.shape] = 1
 
     for i = 1, #board do
         for j = 1, #board[i] do
@@ -437,10 +437,10 @@ end
 -- Main.
 ------------------------------------------------------------------
 
-local function main(neural)
+local function main(neural, seed)
     resetGlobals()
 
-    local stats, fall, colors, next_piece = init()
+    local stats, fall, colors, next_piece = init(seed)
     
     --nn.ClassNLLCriterion():cl()
 
@@ -450,11 +450,11 @@ local function main(neural)
         local key = stdscr:getch()
         handle_input(stats, fall, next_piece, key, neural)
         lower_piece_at_right_time(stats, fall, next_piece, neural)
-        draw_screen(stats, colors, next_piece)
+        --draw_screen(stats, colors, next_piece)
         --handle_input(stats, fall, next_piece, 51)
         -- Don't poll for input much faster than the display can change.
-        local sec, nsec = 0, 5e6  -- 0.005 seconds.
-        posix.nanosleep(sec, nsec)
+        --local sec, nsec = 0, 5e6  -- 0.005 seconds.
+        --posix.nanosleep(sec, nsec)
     end
 
     return stats
@@ -472,8 +472,6 @@ local function bubbleSort(stats)
     end
 end
 
-local nnNum = 40
-
 loadCL()
 
 local function generateNN(num)
@@ -482,7 +480,7 @@ local function generateNN(num)
     for i = 1, num do
         local neu = nn.Sequential()
 
-        local firstLayer = nn.Linear(221, 25)
+        local firstLayer = nn.Linear(227, 25)
         local secondLayer = nn.Linear(25, 15)
 
         neu:add(firstLayer)
@@ -491,7 +489,7 @@ local function generateNN(num)
 
         neu:cl()
 
-        local network = {nn = neu, fl = firstLayer, sl = secondLayer}
+        local network = {nn = neu, score = nil}
         table.insert(neurals, network)
     end
 
@@ -505,6 +503,50 @@ local function TableConcat(t1,t2)
     return t1
 end
 
+local function mutate(network, chance)
+    for i = 1, 25 do
+        local rand = math.random(100)
+
+        if rand <= chance then
+            local rand2 = math.random(100)
+
+            if rand2 <= 10 then
+                for j = 1, 227 do
+                    network.modules[1].weight[i][j] = math.random()*16 -8
+                end
+            else
+                local offset = math.random() -0.5
+
+                for j = 1, 227 do
+                    network.modules[1].weight[i][j] = network.modules[1].weight[i][j] + offset
+                end
+            end
+        end
+    end
+
+    for i = 1, 15 do
+        local rand = math.random(100)
+
+        if rand <= chance then
+            local rand2 = math.random(100)
+
+            if rand2 <= 10 then
+                for j = 1, 25 do
+                    network.modules[3].weight[i][j] = math.random()*16 -8
+                end
+            else
+                local offset = math.random() -0.5
+
+                for j = 1, 25 do
+                    network.modules[3].weight[i][j] = network.modules[3].weight[i][j] + offset
+                end
+            end
+        end
+    end
+
+    return network
+end
+
 local function crossover(network1, network2) -- should make a copy
     --local n1 = deepcopy(network1)
     --local n2 = deepcopy(network2)
@@ -513,21 +555,21 @@ local function crossover(network1, network2) -- should make a copy
 
     local neu = nn.Sequential()
 
-    neu:add(n1.fl)
+    neu:add(nn.Linear(227, 25))
     neu:add(nn.Sigmoid())
-    neu:add(n2.sl)
+    neu:add(nn.Linear(25, 15))
 
     neu:cl()
 
     for i = 1, 25 do
-        local choose = math.random(10)
-        if choose < 2 then
-            for j = 1, 221 do
+        local choose = math.random(100)
+        if choose <= 25 then
+            for j = 1, 227 do
                 neu.modules[1].weight[i][j] = network1.nn.modules[1].weight[i][j]
             end
             neu.modules[1].bias[i] = network1.nn.modules[1].bias[i]
         else
-            for j = 1, 221 do
+            for j = 1, 227 do
                 neu.modules[1].weight[i][j] = network2.nn.modules[1].weight[i][j]
             end
             neu.modules[1].bias[i] = network2.nn.modules[1].bias[i]
@@ -535,8 +577,8 @@ local function crossover(network1, network2) -- should make a copy
     end
 
     for i = 1, 15 do
-        local choose = math.random(10)
-        if choose < 2 then
+        local choose = math.random(100)
+        if choose <= 25 then
             for j = 1, 25 do
                 neu.modules[3].weight[i][j] = network1.nn.modules[3].weight[i][j]
             end
@@ -549,21 +591,29 @@ local function crossover(network1, network2) -- should make a copy
         end
     end
 
-    local newNetwork = {nn = neu, fl = n1.fl, sl = n2.sl}
+    neu = mutate(neu, 30)
+
+    local newNetwork = {nn = neu, score = nil}
 
     return newNetwork
 end
 
+local nnNum = 30
+
 local networks = generateNN(nnNum)
 local finalStats = {}
 
-for j = 1, 10 do
+local file = io.open("out", "w")
+
+for j = 1, 100 do
+    local seed = os.time()
     local allStats = {}
+    --local k = j > 1 and 11 or 1
     for i = 1, nnNum do
         local avgScore = 0.0
         local avgLines = 0.0
         for k = 1, 10 do
-            local curScore = main(networks[i].nn)
+            local curScore = main(networks[i].nn, seed + k*1000)
             avgScore = avgScore + curScore.score
             avgLines = avgLines + curScore.lines
         end
@@ -574,63 +624,39 @@ for j = 1, 10 do
 
     bubbleSort(allStats)
 
+    file:write("Iteration number: ", j, "\n")
     for i = 1, #allStats do
-        print(allStats[i][1].score, allStats[i][1].lines)
+        file:write(allStats[i][1].score, "\t", allStats[i][1].lines, "\n")
     end
-    print('----')
+    file:write('----\n')
+    file:flush()
 
-    for i = 1, 30 do
+    for i = 1, 20 do
         table.remove(allStats)
     end
 
-    -- 20 crossovers migues (first and second layer swap)
+    -- 20 crossovers half-migues (first and second layer swap)
     local newNN = {}
-    for i = 1, 25 do
-        table.insert(newNN, crossover(allStats[math.random(10)][2], allStats[math.random(10)][2]))
+    for i = 1, 20 do
+        local rand1, rand2 = math.random(10), math.random(10)
+        if rand1 < rand2 then
+            table.insert(newNN, crossover(allStats[rand2][2], allStats[rand1][2]))
+        else
+            table.insert(newNN, crossover(allStats[rand1][2], allStats[rand2][2]))
+        end
     end
-
-    local newNN2 = generateNN(5)
 
     local n = {}
     for i = 1, #allStats do
         table.insert(n, allStats[i][2])
     end
-    networks = TableConcat(newNN, n)
-    networks = TableConcat(newNN2, networks)
+    networks = TableConcat(n, newNN)
 
     finalStats = allStats
+
+    collectgarbage()
 end
 
-print('===')
-for i = 1, #finalStats do
-    print(finalStats[i][1].score, finalStats[i][1].lines)
-    --print(finalStats[i][2].nn.modules[1].weight)
-    --print(finalStats[i][2].nn.modules[1].weight[10])
-    --print(torch.DoubleTensor(221):cl())
-end
+print(finalStats[1][2].nn.modules[1].weight)
 
-print('===')
-finalStats[1][1] = main(finalStats[1][2].nn)
-print(finalStats[1][1].score, finalStats[1][1].lines)
-finalStats[1][1] = main(finalStats[1][2].nn)
-print(finalStats[1][1].score, finalStats[1][1].lines)
-finalStats[1][1] = main(finalStats[1][2].nn)
-print(finalStats[1][1].score, finalStats[1][1].lines)
-finalStats[1][1] = main(finalStats[1][2].nn)
-print(finalStats[1][1].score, finalStats[1][1].lines)
-finalStats[1][1] = main(finalStats[1][2].nn)
-print(finalStats[1][1].score, finalStats[1][1].lines)
-finalStats[1][1] = main(finalStats[1][2].nn)
-print(finalStats[1][1].score, finalStats[1][1].lines)
-finalStats[1][1] = main(finalStats[1][2].nn)
-print(finalStats[1][1].score, finalStats[1][1].lines)
-finalStats[1][1] = main(finalStats[1][2].nn)
-print(finalStats[1][1].score, finalStats[1][1].lines)
-finalStats[1][1] = main(finalStats[1][2].nn)
-print(finalStats[1][1].score, finalStats[1][1].lines)
-
-print('--------------------------')
-finalStats[1][2].nn.modules[1].weight[10] = torch.DoubleTensor(221):cl()
---print(finalStats[1][2].nn.modules[1].weight)
-local newScore = main(finalStats[1][2].nn)
-print(newScore.score, newScore.lines)
+file:close()
