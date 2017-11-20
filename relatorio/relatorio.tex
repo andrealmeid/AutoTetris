@@ -38,7 +38,7 @@ RA: 155943}}
 \maketitle
 
 \section{Resumo}
-Nesse projeto, foram realizados estudos envolvendo técnicas de algoritmos genéticos em redes neurais artificiais para encontrar uma solução aproximada para um algoritmo que faça jogadas ideais no jogo \textit{Tetris}.
+Nesse projeto, foi proposta e experimentada uma abordagem para a criação de um algoritmo que consiga fazer jogadas no jogo eletrônico \textit{Tetris}, obtendo uma pontuação compatível com a esperada por humanos. Para tal, foram utilizadas técnicas de algoritmos genéticos aplicadas em redes neurais artificiais.
 
 \section{Introdução}
 
@@ -88,10 +88,19 @@ Um algoritmo genético é uma técnica para encontrar uma solução ideal ou pr�
 Rede neural artificial é uma coleção de unidades chamadas neurônios que são interligados entre si com uma ordem (camadas), com inspiração biológica no funcionamento do cérebro dos animais. Cada neurônio de uma camada se liga a todos os neurônios da anterior (se não for a camada de entrada) e da posterior (se não for a camada de saída). Cada neurônio é ativado de acordo com uma função de ativação, os parâmetros dessa função de ativação são as saídas dos neurônios anteriores multiplicados por um peso nas arestas que conectam estes neurônios. Nos neurônios de entrada são inseridos metadados e nas funções de saída algum tipo de resposta ou classificação \cite{b4}.\\
 
 \subsection{Aprendizado de máquina para jogos eletrônicos}
+Aprendizado de máquinas aplicado em jogos eletrônicos vem sendo estudado pela academia como forma de avaliar a capacidade da máquina de executar tão bem quantas tarefas complexas, como é o caso de jogar videogames. Um estudo em destaque é o caso do AlphaGo, uma inteligência artificial que usa técnicas de aprendizado profundo e conseguiu vencer o campeão mundial do jogo Go \cite{b5}. Alguns desses estudos utilizam a técnica de algortimos genéticos para encontrar um modelo computacional adequado para o jogo, e acabaram gerando modelos que são compatíveis com jogadores reais, em jogos como Snake \cite{b6} e Counter-Strike \cite{b7}. Nesses jogos, parâmetros como pontuação do jogador e desempenho estratégico são usados como função de custo para treinar o algoritmo.
 
 \subsection{Trabalhos relacionados}
+Em \cite{b8}, o autor cria uma rede neural para jogar Tetris, usando algoritmos genéticos para otimizar os pesos dos neurônios (substituindo o \textit{backpropagation}). O jogador pontua ao descer peças no tabuleiro e completar linhas. A função de custo é composta por: número de linhas completadas, altura máxima, altura acumulada, altura relativa, buracos das linhas e completude do tabuleiro. Durante o jogo, a cada nova peça, todas as jogadas possíveis são testadas e a que retornar a melhor pontuação (seguindo as heurísticas acima) é executada.
 
-\section{Soluções propostas}
+No trabalho \cite{b9}, o autor utiliza uma função com as heurísticas: altura agregada, linhas completadas, buracos e diferença de alturas vizinhas. Novamente, todas as jogadas possíveis são testadas e a que retornar o maior valor é executada. A função utilizada é a soma do produto das heurísticas com uma variável de valor inicialmente desconhecido. Os pesos de cada uma das heurísticas foi determinado usando algoritmos genéticos. 
+
+No artigo \cite{b10}, as autoras utilizam uma metodologia semelhante à vista em \cite{b9}, só que com as seguintes heurísticas: maior pilha, buracos, buracos conectados, linhas removidas, diferença de altitude, profundidade máxima, soma dos vales, altura do último tetraminó, número de células ocupadas, número de células ocupadas por coluna, soma de transições ocupadas/desocupadas horizontalmente e verticalmente. A função de custo é dado por $\sum_{i=1}^n  w_{i}|r_{i}(b)-d_{i} | ^{e_{i}}$, onde $r_{i}(b)$ é o valor retornado por cada uma das heurísticas e os valores de $w_i$, $d_i$ e $e_i$ foram descobertos utilizando algoritmos genéticos.
+
+
+\section{Metodologia}
+
+\section{Resultados}
 
 \section{Conclusão}
 
@@ -106,6 +115,18 @@ Rede neural artificial é uma coleção de unidades chamadas neurônios que são
 \bibitem{b3} Goldberg, D. E. (1989). Genetic Algorithms in Search, Optimization, and Machine Learning.
 
 \bibitem{b4}  Geron, A. (2017). \textit{Hands-on machine learning with Scikit-Learn and TensorFlow: concepts, tools, and techniques to build intelligent systems.}
+
+\bibitem{b5} Silver, D., Schrittwieser, J., Simonyan, K., Antonoglou, I., Huang, A., Guez, A., ... \& Chen, Y. (2017). Mastering the game of go without human knowledge. Nature, 550(7676), 354-359.
+
+\bibitem{b6} Yeh, J. F., Su, P. H., Huang, S. H., \& Chiang, T. C. (2016, November). Snake game AI: Movement rating functions and evolutionary algorithm-based optimization. In Technologies and Applications of Artificial Intelligence (TAAI), 2016 Conference on (pp. 256-261). IEEE.
+
+\bibitem{b7} Cole, N., Louis, S. J., \& Miles, C. (2004, June). Using a genetic algorithm to tune first-person shooter bots. In Evolutionary Computation, 2004. CEC2004. Congress on (Vol. 1, pp. 139-145). IEEE.
+
+\bibitem{b8} \texttt{\url{https://github.com/llSourcell/How_to_make_an_evolutionary_tetris_bot}}
+
+\bibitem{b9} \texttt{ \url{https://codemyroad.wordpress.com/2013/04/14/tetris-ai-the-near-perfect-player/}}
+
+\bibitem{b10} Böhm, N., Kókai, G., \& Mandl, S. (2005). An evolutionary approach to tetris. In The Sixth Metaheuristics International Conference (MIC2005) (p. 5).
 
 \end{thebibliography}
 
