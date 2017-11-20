@@ -97,6 +97,9 @@ No trabalho \cite{b9}, o autor utiliza uma função com as heurísticas: altura 
 
 No artigo \cite{b10}, as autoras utilizam uma metodologia semelhante à vista em \cite{b9}, só que com as seguintes heurísticas: maior pilha, buracos, buracos conectados, linhas removidas, diferença de altitude, profundidade máxima, soma dos vales, altura do último tetraminó, número de células ocupadas, número de células ocupadas por coluna, soma de transições ocupadas/desocupadas horizontalmente e verticalmente. A função de custo é dado por $\sum_{i=1}^n  w_{i}|r_{i}(b)-d_{i} | ^{e_{i}}$, onde $r_{i}(b)$ é o valor retornado por cada uma das heurísticas e os valores de $w_i$, $d_i$ e $e_i$ foram descobertos utilizando algoritmos genéticos.
 
+\subsection{Tecnologias empregadas}
+Para treinamento das redes neurais, foi utilizada a versão com OpenCL\cite{b11} do Torch\cite{b12}, um framework de computação cientifica para LuaJIT\cite{b13}. Reutilizamos o Tetris feito em \cite{b14}, devido a simplicidade (o jogo é executado em um emulador de terminal), boa documentação e porque foi escrito em Lua, facilitando a integração dos dois programas e a modificação do jogo.
+
 
 \section{Metodologia}
 
@@ -127,6 +130,14 @@ No artigo \cite{b10}, as autoras utilizam uma metodologia semelhante à vista em
 \bibitem{b9} \texttt{ \url{https://codemyroad.wordpress.com/2013/04/14/tetris-ai-the-near-perfect-player/}}
 
 \bibitem{b10} Böhm, N., Kókai, G., \& Mandl, S. (2005). An evolutionary approach to tetris. In The Sixth Metaheuristics International Conference (MIC2005) (p. 5).
+
+\bibitem{b11} \texttt{\url{https://www.khronos.org/opencl/}}
+
+\bibitem{b12} \texttt{\url{http://torch.ch/}}
+
+\bibitem{b13} \texttt{\url{http://luajit.org/luajit.html}}
+
+\bibitem{b14} \texttt{\url{https://github.com/tylerneylon/termtris}}
 
 \end{thebibliography}
 
