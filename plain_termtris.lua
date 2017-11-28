@@ -236,6 +236,8 @@ local function lock_and_update_moving_piece(stats, fall, next_piece)
     board[x][y] = moving_piece.shape  -- Lock the moving piece in place.
   end)
 
+  stats.score = stats.score + moving_piece.y
+
   -- Clear any lines possibly filled up by the just-placed piece.
   local num_removed = 0
   local max_line_y = math.min(moving_piece.y + 4, board_size.y)

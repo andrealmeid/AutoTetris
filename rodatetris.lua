@@ -251,10 +251,10 @@ local function draw_screen(stats, colors, next_piece)
     stdscr:refresh()
 end
 
-local function playNN(neural, nextPiece)
+local function playNN(neural)
     local input = {0,0,0,0,0,0,0}
 
-    input[nextPiece.shape] = 1
+    input[moving_piece.shape] = 1
 
     for i = 1, #board do
         for j = 1, #board[i] do
@@ -350,7 +350,7 @@ lock_and_update_moving_piece = function(stats, fall, next_piece, neural)
         board[x][y] = moving_piece.shape  -- Lock the moving piece in place.
     end)
 
-    stats.score = stats.score +1
+    stats.score = stats.score + moving_piece.y
 
     -- Clear any lines possibly filled up by the just-placed piece.
     local num_removed = 0
@@ -387,7 +387,7 @@ lock_and_update_moving_piece = function(stats, fall, next_piece, neural)
     end
     next_piece.shape = math.random(#shapes)
     
-    local pos, rot = playNN(neural, next_piece)
+    local pos, rot = playNN(neural)
     placePiece(pos, rot, stats, fall, next_piece, neural)
 
 end
