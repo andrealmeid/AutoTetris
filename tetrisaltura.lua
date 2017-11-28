@@ -17,7 +17,10 @@ local torch = require 'torch'
 -- Neural networks settings
 local globalId = 0
 local inputSize = 27
-local hiddenUnits = 200
+local hiddenUnits = 50
+local hiddenUnits2 = 15
+
+local units = {hiddenUnits, 0, hiddenUnits2, 0, 15}
 
 ------------------------------------------------------------------
 -- Piece shapes.
@@ -504,11 +507,14 @@ local function generateNN(num)
         local neu = nn.Sequential()
 
         local firstLayer = nn.Linear(inputSize, hiddenUnits)
-        local secondLayer = nn.Linear(hiddenUnits, 15)
+        local secondLayer = nn.Linear(hiddenUnits, hiddenUnits2)
+        local thirdLayer = nn.Linear(hiddenUnits2, 15)
 
         neu:add(firstLayer)
         neu:add(nn.Sigmoid())
         neu:add(secondLayer)
+        neu:add(nn.Sigmoid())
+        neu:add(thirdLayer)
 
         neu:cl()
 
@@ -549,7 +555,7 @@ local function mutate(network, chance)
         end
     end
 
-    for i = 1, 15 do
+    for i = 1, hiddenUnits2 do
         local rand = math.random(100)
 
         if rand <= chance then
@@ -564,6 +570,26 @@ local function mutate(network, chance)
 
                 for j = 1, hiddenUnits do
                     network.modules[3].weight[i][j] = network.modules[3].weight[i][j] + offset
+                end
+            end
+        end
+    end
+
+    for i = 1, 15 do
+        local rand = math.random(100)
+
+        if rand <= chance then
+            local rand2 = math.random(100)
+
+            if rand2 <= 20 then
+                for j = 1, hiddenUnits2 do
+                    network.modules[5].weight[i][j] = math.random()*30 -15
+                end
+            else
+                local offset = math.random() -0.5
+
+                for j = 1, hiddenUnits2 do
+                    network.modules[5].weight[i][j] = network.modules[5].weight[i][j] + offset
                 end
             end
         end
@@ -587,72 +613,31 @@ local function removeDuplicates(table)
 end
 
 local function crossover(network1, network2) -- should make a copy
-    --local n1 = deepcopy(network1)
-    --local n2 = deepcopy(network2)
     local neu = nn.Sequential()
 
     neu:add(nn.Linear(inputSize, hiddenUnits))
     neu:add(nn.Sigmoid())
+    neu:add(nn.Linear(hiddenUnits, hiddenUnits2))
+    neu:add(nn.Sigmoid())
     neu:add(nn.Linear(hiddenUnits, 15))
 
     neu:cl()
---[[
-    for i = 1, hiddenUnits do
-        local choose = math.random(100)
-        if choose <= 25 then
-            for j = 1, inputSize do
-                neu.modules[1].weight[i][j] = network1.nn.modules[1].weight[i][j]
-            end
-            neu.modules[1].bias[i] = network1.nn.modules[1].bias[i]
-        else
-            for j = 1, inputSize do
-                neu.modules[1].weight[i][j] = network2.nn.modules[1].weight[i][j]
-            end
-            neu.modules[1].bias[i] = network2.nn.modules[1].bias[i]
+
+    for j = 1, 5, 2 do
+        neu.modules[j] = network2.nn.modules[j]:clone()
+
+        local neurons = {}
+        for i = 1, math.ceil(units[j] * 0.25) do
+            table.insert(neurons, math.random(units[j]))
         end
-    end
+        neurons = removeDuplicates(neurons)
 
-    for i = 1, 15 do
-        local choose = math.random(100)
-        if choose <= 25 then
-            for j = 1, hiddenUnits do
-                neu.modules[3].weight[i][j] = network1.nn.modules[3].weight[i][j]
-            end
-            neu.modules[3].bias[i] = network1.nn.modules[3].bias[i]
-        else
-            for j = 1, hiddenUnits do
-                neu.modules[3].weight[i][j] = network2.nn.modules[3].weight[i][j]
-            end
-            neu.modules[3].bias[i] = network2.nn.modules[3].bias[i]
+        for i = 1, #neurons do
+            local sink = neu.modules[j].weight:select(1, neurons[i])
+            local source = network1.nn.modules[j].weight:select(1, neurons[i])
+
+            sink:copy(source)
         end
-    end
-
-    neu = mutate(neu, 30)
-
-    local newNetwork = {nn = neu, score = nil}
-]]--
-    neu.modules[1] = network2.nn.modules[1]:clone()
-    neu.modules[3] = network2.nn.modules[3]:clone()
-
-    local neurons = {}
-    for i = 1, math.ceil(hiddenUnits*0.25) do
-        table.insert(neurons, math.random(hiddenUnits))
-    end
-    neurons = removeDuplicates(neurons)
-
-    for i = 1, #neurons do
-        local sink = neu.modules[1].weight:select(1, neurons[i])
-        local source = network1.nn.modules[1].weight:select(1, neurons[i])
-
-        sink:copy(source)
-        
-        sink = neu.modules[3].weight:select(2, neurons[i])
-        source = network1.nn.modules[3].weight:select(2, neurons[i])
-    
-        sink:copy(source)
-        --[[
-        print(sink, source)
-        ]]--
     end
 
     neu = mutate(neu, 30)
@@ -665,7 +650,12 @@ end
 
 local function file_exists(name)
    local f=io.open(name,"r")
-   if f~=nil then io.close(f) return true else return false end
+   if f~=nil then
+       io.close(f)
+       return true
+   else
+       return false
+   end
 end
 
 local nnNum = 30
