@@ -32,7 +32,6 @@ local shapes
 ------------------------------------------------------------------
 -- Declare internal globals.
 ------------------------------------------------------------------
-
 local game_state -- Could also be 'paused' or 'over'.
 
 local stdscr -- This will be the standard screen from the curses library.
@@ -50,37 +49,19 @@ local function resetGlobals()
 
     stdscr = nil  -- This will be the standard screen from the curses library.
 
-    board_size = {x = 10, y = 20}
+    board_size = {x = 10, y = 10}
     board = {}  -- board[x][y] = <piece at (x, y)>; 0 = empty, -1 = border.
     val = {border = -1, empty = 0}  -- Shorthand to avoid magic numbers.
 
     -- We'll write *shape* for an index into the shapes table; the
     -- term *piece* also includes a rotation number and x, y coords.
     moving_piece = {}  -- Keys will be: shape, rot_num, x, y.
-
+    
     shapes = {
-        { {0,0,1,0},
-        {0,1,1,1}
-    },
-    { {0,0,1,1},
-    {0,1,1,0}
-},
-{ {0,1,1,0},
-{0,0,1,1}
-    },
-    { {1,1,1,1},
-    {0,0,0,0}
-},
-{ {0,0,1,1},
-{0,0,1,1}
-    },
-    { {0,1,0,0},
-    {0,1,1,1}
-},
-{ {0,0,0,1},
-{0,1,1,1}
+      {
+        {1}
+      }
     }
-}
 
 
 end
@@ -351,7 +332,7 @@ end
 
 -- A funcao recebe uma posicao entre [1, 10] e uma rotacao [1, 4] e coloca a peca la
 local function placePiece(position, rotation, stats, fall, next_piece, neural)
-    local times = position - 5
+    local times = position - 4
 
     --print(position, rotation)
 
@@ -394,6 +375,9 @@ lock_and_update_moving_piece = function(stats, fall, next_piece, neural)
                     board[x][y] = board[x][y - 1]
                 end
             end
+            for x = 1, board_size.x do
+                board[x][1] = val.empty
+            end
             -- Record the line and level updates.
             stats.lines = stats.lines + 1
             if stats.lines % 10 == 0 then  -- Level up when lines is a multiple of 10.
@@ -403,8 +387,8 @@ lock_and_update_moving_piece = function(stats, fall, next_piece, neural)
             num_removed = num_removed + 1
         end
     end
-    if num_removed > 0 then curses.flash() end
-    stats.score = stats.score + 2 * num_removed * num_removed
+    --if num_removed > 0 then curses.flash() end
+    stats.score = stats.score + 5 * num_removed * num_removed
 
 
     -- Bring in the waiting next piece and set up a new next piece.
@@ -413,9 +397,6 @@ lock_and_update_moving_piece = function(stats, fall, next_piece, neural)
         game_state = 'over'
     end
     next_piece.shape = math.random(#shapes)
-
-    local pos, rot = playNN(neural)
-    placePiece(pos, rot, stats, fall, next_piece, neural)
 end
 
 
@@ -467,20 +448,29 @@ local function main(neural, seed)
     resetGlobals()
 
     local stats, fall, colors, next_piece = init(seed)
+    local time = 5e6
 
     --nn.ClassNLLCriterion():cl()
 
-    local pos, rot = playNN(neural, next_piece)
-    placePiece(pos, rot, stats, fall, next_piece, neural)
     while game_state ~= 'over' do  -- Main loop.
         local key = stdscr:getch()
         handle_input(stats, fall, next_piece, key, neural)
         lower_piece_at_right_time(stats, fall, next_piece, neural)
         draw_screen(stats, colors, next_piece)
+
+        local pos, rot = playNN(neural)
+        placePiece(pos, rot, stats, fall, next_piece, neural)
+
+        if stats.lines > 20 then
+            time = 5e8
+        end
+        if stats.lines > 1000 then
+            break
+        end
         --handle_input(stats, fall, next_piece, 51)
         -- Don't poll for input much faster than the display can change.
-        --local sec, nsec = 0, 5e6  -- 0.005 seconds.
-        --posix.nanosleep(sec, nsec)
+        local sec, nsec = 0, time  -- 0.005 seconds.
+        posix.nanosleep(sec, nsec)
     end
 
     return stats
@@ -538,7 +528,7 @@ local function mutate(network, chance)
         if rand <= chance then
             local rand2 = math.random(100)
 
-            if rand2 <= 20 then
+            if rand2 <= 10 then
                 for j = 1, inputSize do
                     network.modules[1].weight[i][j] = math.random()*30 -15
                 end
@@ -558,7 +548,7 @@ local function mutate(network, chance)
         if rand <= chance then
             local rand2 = math.random(100)
 
-            if rand2 <= 20 then
+            if rand2 <= 10 then
                 for j = 1, hiddenUnits do
                     network.modules[3].weight[i][j] = math.random()*30 -15
                 end
@@ -648,10 +638,10 @@ local file = io.open("out", "w")
 
 local networks = generateNN(nnNum)
 local start = 1
-if file_exists("checkpoint") then
+if file_exists("checktony") then
     file:write("Loading checkpoint\n")
     file:flush()
-    local check = torch.load("checkpoint")
+    local check = torch.load("checktony")
     networks = check[2]
     start = check[1]
 end
@@ -665,13 +655,13 @@ for j = start, 3000 do
     for i = 1, nnNum do
         local avgScore = 0.0
         local avgLines = 0.0
-        for k = 1, 10 do
+        for k = 1, 1 do
             local curScore = main(networks[i].nn, seed + k*1000)
             avgScore = avgScore + curScore.score
             avgLines = avgLines + curScore.lines
         end
-        avgScore = avgScore / 10.0
-        avgLines = avgLines / 10.0
+        avgScore = avgScore
+        avgLines = avgLines
         table.insert(allStats, {{score = avgScore, lines = avgLines}, networks[i]})
     end
 
@@ -706,7 +696,7 @@ for j = start, 3000 do
     networks = TableConcat(n, newNN)
 
     if j % 20 == 0 then
-        torch.save("checkpoint", {j, networks})
+        torch.save("checktony", {j, networks})
         file:write("Creating checkpoint\n")
         file:flush()
     end

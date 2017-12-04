@@ -16,7 +16,7 @@ local torch = require 'torch'
 
 -- Neural networks settings
 local globalId = 0
-local inputSize = 21
+local inputSize = 24
 local hiddenUnits = 100
 
 ------------------------------------------------------------------
@@ -27,12 +27,24 @@ local hiddenUnits = 100
 -- that at runtime, s = shapes[shape_num][rot_num] is a 2D array
 -- with s[x][y] = either 0 or 1, indicating the piece's shape.
 
+local shapesReset = {
+      {
+        {1}
+      },
+      {
+        {1,1},
+        {1,1}
+      },
+      {
+        {1,1}
+      }
+    }
+
 local shapes
 
 ------------------------------------------------------------------
 -- Declare internal globals.
 ------------------------------------------------------------------
-
 local game_state -- Could also be 'paused' or 'over'.
 
 local stdscr -- This will be the standard screen from the curses library.
@@ -45,12 +57,16 @@ local val -- Shorthand to avoid magic numbers.
 -- term *piece* also includes a rotation number and x, y coords.
 local moving_piece = {}  -- Keys will be: shape, rot_num, x, y.
 
+local function tableClone(org)
+  return {table.unpack(org)}
+end
+
 local function resetGlobals()
     game_state = 'playing'  -- Could also be 'paused' or 'over'.
 
     stdscr = nil  -- This will be the standard screen from the curses library.
 
-    board_size = {x = 10, y = 20}
+    board_size = {x = 10, y = 10}
     board = {}  -- board[x][y] = <piece at (x, y)>; 0 = empty, -1 = border.
     val = {border = -1, empty = 0}  -- Shorthand to avoid magic numbers.
 
@@ -58,31 +74,7 @@ local function resetGlobals()
     -- term *piece* also includes a rotation number and x, y coords.
     moving_piece = {}  -- Keys will be: shape, rot_num, x, y.
 
-    shapes = {
-        { {0,0,1,0},
-        {0,1,1,1}
-    },
-    { {0,0,1,1},
-    {0,1,1,0}
-},
-{ {0,1,1,0},
-{0,0,1,1}
-    },
-    { {1,1,1,1},
-    {0,0,0,0}
-},
-{ {0,0,1,1},
-{0,0,1,1}
-    },
-    { {0,1,0,0},
-    {0,1,1,1}
-},
-{ {0,0,0,1},
-{0,1,1,1}
-    }
-}
-
-
+    shapes = tableClone(shapesReset)
 end
 
 ------------------------------------------------------------------
@@ -260,15 +252,21 @@ end
 local function playNN(neural)
     local input = {}
 
-    table.insert(input, moving_piece.shape)
+    for i = 1, #shapes do
+        if i == moving_piece.shape then
+            table.insert(input, 1)
+        else
+            table.insert(input, 0)
+        end
+    end
 
     for i = 1, 10 do
-        for j = 1, 20 do
+        for j = 1, 10 do
             if board[i][j] ~= 0 and board[i][j] ~= -1 then
                 table.insert(input, 21 - j)
                 break
             end
-            if j == 20 then
+            if j == 10 then
                 table.insert(input, 0)
             end
         end
@@ -288,14 +286,23 @@ local function playNN(neural)
             min = input[i+8]
         end
     end
-
     table.insert(input, max - min)
+
+    local blank = 0
+    for i = 1, 10 do
+        for j = 1, 10 do
+            if board[i][j] == 0 then
+                blank = blank +1
+            end
+        end
+    end
+    table.insert(input, blank/100.0)
 
     input = torch.Tensor(input):cl()
 
     local pred = neural:forward(input)
 
-    local max = pred[1]
+    max = pred[1]
     local pos_i = 1
     for i = 2, 10 do
         if pred[i] > max then
@@ -304,9 +311,9 @@ local function playNN(neural)
         end
     end
 
-    max = pred[12]
-    local rot_i = 12
-    for i = 13, 15 do
+    max = pred[11]
+    local rot_i = 11
+    for i = 12, 14 do
         if pred[i] > max then
             max = pred[i]
             rot_i = i
@@ -377,11 +384,12 @@ lock_and_update_moving_piece = function(stats, fall, next_piece, neural)
         board[x][y] = moving_piece.shape  -- Lock the moving piece in place.
     end)
 
-    stats.score = stats.score + moving_piece.y
-
     -- Clear any lines possibly filled up by the just-placed piece.
     local num_removed = 0
     local max_line_y = math.min(moving_piece.y + 4, board_size.y)
+
+    stats.score = stats.score + math.floor(10*moving_piece.y / max_line_y)
+
     for line_y = moving_piece.y + 1, max_line_y do
         local is_full_line = true
         for x = 1, board_size.x do
@@ -394,6 +402,9 @@ lock_and_update_moving_piece = function(stats, fall, next_piece, neural)
                     board[x][y] = board[x][y - 1]
                 end
             end
+            for x = 1, board_size.x do
+                board[x][1] = val.empty
+            end
             -- Record the line and level updates.
             stats.lines = stats.lines + 1
             if stats.lines % 10 == 0 then  -- Level up when lines is a multiple of 10.
@@ -403,8 +414,8 @@ lock_and_update_moving_piece = function(stats, fall, next_piece, neural)
             num_removed = num_removed + 1
         end
     end
-    if num_removed > 0 then curses.flash() end
-    stats.score = stats.score + 2 * num_removed * num_removed
+    --if num_removed > 0 then curses.flash() end
+    stats.score = stats.score + 100 * num_removed
 
 
     -- Bring in the waiting next piece and set up a new next piece.
@@ -413,9 +424,6 @@ lock_and_update_moving_piece = function(stats, fall, next_piece, neural)
         game_state = 'over'
     end
     next_piece.shape = math.random(#shapes)
-
-    local pos, rot = playNN(neural)
-    placePiece(pos, rot, stats, fall, next_piece, neural)
 end
 
 
@@ -463,24 +471,30 @@ end
 -- Main.
 ------------------------------------------------------------------
 
-local function main(neural, seed)
+local function main(neural, seed, slow)
     resetGlobals()
 
     local stats, fall, colors, next_piece = init(seed)
 
     --nn.ClassNLLCriterion():cl()
 
-    local pos, rot = playNN(neural, next_piece)
-    placePiece(pos, rot, stats, fall, next_piece, neural)
     while game_state ~= 'over' do  -- Main loop.
         local key = stdscr:getch()
         handle_input(stats, fall, next_piece, key, neural)
         lower_piece_at_right_time(stats, fall, next_piece, neural)
         draw_screen(stats, colors, next_piece)
+
+        local pos, rot = playNN(neural)
+        placePiece(pos, rot, stats, fall, next_piece, neural)
+
+        if stats.lines > 500 then
+            break
+        end
         --handle_input(stats, fall, next_piece, 51)
         -- Don't poll for input much faster than the display can change.
-        --local sec, nsec = 0, 5e6  -- 0.005 seconds.
-        --posix.nanosleep(sec, nsec)
+        if slow then
+            posix.nanosleep(0, 5e8)
+        end
     end
 
     return stats
@@ -489,7 +503,8 @@ end
 local function bubbleSort(stats)
     for i = 1, #stats do
         for j = #stats, i, -1 do
-            if stats[i][1].lines < stats[j][1].lines or (stats[i][1].lines == stats[j][1].lines and stats[i][1].score < stats[j][1].score) then
+            --if stats[i][1].lines < stats[j][1].lines or (stats[i][1].lines == stats[j][1].lines and stats[i][1].score < stats[j][1].score) then
+            if stats[i][1].score < stats[j][1].score then
                 local aux = stats[i]
                 stats[i] = stats[j]
                 stats[j] = aux
@@ -507,7 +522,7 @@ local function generateNN(num)
         local neu = nn.Sequential()
 
         local firstLayer = nn.Linear(inputSize, hiddenUnits)
-        local secondLayer = nn.Linear(hiddenUnits, 15)
+        local secondLayer = nn.Linear(hiddenUnits, 14)
 
         neu:add(firstLayer)
         neu:add(nn.Sigmoid())
@@ -538,35 +553,39 @@ local function mutate(network, chance)
         if rand <= chance then
             local rand2 = math.random(100)
 
-            if rand2 <= 20 then
+            if rand2 <= 10 then
                 for j = 1, inputSize do
                     network.modules[1].weight[i][j] = math.random()*30 -15
+                    network.modules[1].bias[i] = math.random()*2 -1
                 end
             else
-                local offset = math.random() -0.5
+                local offset = math.random()*1.2 -0.6
 
                 for j = 1, inputSize do
                     network.modules[1].weight[i][j] = network.modules[1].weight[i][j] + offset
+                    network.modules[1].bias[i] = network.modules[1].bias[i] + 2*offset/3
                 end
             end
         end
     end
 
-    for i = 1, 15 do
+    for i = 1, 14 do
         local rand = math.random(100)
 
         if rand <= chance then
             local rand2 = math.random(100)
 
-            if rand2 <= 20 then
+            if rand2 <= 10 then
                 for j = 1, hiddenUnits do
                     network.modules[3].weight[i][j] = math.random()*30 -15
+                    network.modules[3].bias[i] = math.random()*2 -1
                 end
             else
                 local offset = math.random() -0.5
 
                 for j = 1, hiddenUnits do
                     network.modules[3].weight[i][j] = network.modules[3].weight[i][j] + offset
+                    network.modules[3].bias[i] = network.modules[3].bias[i] + 2*offset/3
                 end
             end
         end
@@ -596,7 +615,7 @@ local function crossover(network1, network2) -- should make a copy
 
     neu:add(nn.Linear(inputSize, hiddenUnits))
     neu:add(nn.Sigmoid())
-    neu:add(nn.Linear(hiddenUnits, 15))
+    neu:add(nn.Linear(hiddenUnits, 14))
 
     neu:cl()
 
@@ -612,19 +631,21 @@ local function crossover(network1, network2) -- should make a copy
     for i = 1, #neurons do
         local sink = neu.modules[1].weight:select(1, neurons[i])
         local source = network1.nn.modules[1].weight:select(1, neurons[i])
+        neu.modules[1].bias[i] = network1.nn.modules[1].bias[i]
 
         sink:copy(source)
     end
 
     neurons = {}
-    for i = 1, math.ceil(15*0.25) do
-        table.insert(neurons, math.random(15))
+    for i = 1, math.ceil(14*0.25) do
+        table.insert(neurons, math.random(14))
     end
     neurons = removeDuplicates(neurons)
 
     for i = 1, #neurons do
         local sink = neu.modules[3].weight:select(1, neurons[i])
         local source = network1.nn.modules[3].weight:select(1, neurons[i])
+        neu.modules[3].bias[i] = network1.nn.modules[3].bias[i]
 
         sink:copy(source)
     end
@@ -643,8 +664,9 @@ local function file_exists(name)
 end
 
 local nnNum = 30
+local iterSize = #shapesReset > 1 and 5 or 1
 
-local file = io.open("out", "w")
+local file = io.open("saida", "w")
 
 local networks = generateNN(nnNum)
 local start = 1
@@ -656,6 +678,19 @@ if file_exists("checkpoint") then
     start = check[1]
 end
 
+local function goNetwork(allStats, seed, i)
+    local avgScore = 0.0
+    local avgLines = 0.0
+    for k = 1, iterSize do
+        local curScore = main(networks[i].nn, seed + k*1000)
+        avgScore = avgScore + curScore.score
+        avgLines = avgLines + curScore.lines
+    end
+    avgScore = avgScore / iterSize
+    avgLines = avgLines / iterSize
+    table.insert(allStats[1], {{score = avgScore, lines = avgLines}, networks[i]})
+end
+
 local finalStats = {}
 
 for j = start, 3000 do
@@ -663,16 +698,7 @@ for j = start, 3000 do
     local allStats = {}
     --local k = j > 1 and 11 or 1
     for i = 1, nnNum do
-        local avgScore = 0.0
-        local avgLines = 0.0
-        for k = 1, 10 do
-            local curScore = main(networks[i].nn, seed + k*1000)
-            avgScore = avgScore + curScore.score
-            avgLines = avgLines + curScore.lines
-        end
-        avgScore = avgScore / 10.0
-        avgLines = avgLines / 10.0
-        table.insert(allStats, {{score = avgScore, lines = avgLines}, networks[i]})
+        goNetwork({allStats}, seed, i)
     end
 
     bubbleSort(allStats)
@@ -716,4 +742,5 @@ for j = start, 3000 do
     collectgarbage()
 end
 
+main(finalStats[1][2].nn, os.time(), true)
 file:close()
