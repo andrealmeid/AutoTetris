@@ -44,8 +44,12 @@ Nesse projeto, foi proposta e experimentada uma abordagem para a criação de um
 
 \subsection{Tetris}
 \subsubsection{O jogo}
-Tetris é um jogo eletrônico criado em 1984 pelo matemático soviético Alexey Pazhitnov, tendo obtido grande popularidade principalmente nas plataformas \textit{Atari  ST} e no \textit{Nintendo Entertainment System} \cite{b1}. Até hoje, já foram vendidas mais de 50 milhões de cópias mundialmente. O jogo é do gênero \textit{puzzle}, onde o jogador precisa resolver algum tipo de quebra-cabeça. \\
+Tetris é um jogo eletrônico criado em 1984 pelo matemático soviético Alexey Pazhitnov, tendo obtido grande popularidade principalmente nas plataformas \textit{Atari  ST} e no \textit{Nintendo Entertainment System} \cite{b1}. Até hoje, já foram vendidas mais de 50 milhões de cópias mundialmente. O jogo é do gênero \textit{puzzle}, onde o jogador precisa resolver algum tipo de quebra-cabeça.
+
 No Tetris, o "tabuleiro" do jogo é formado por uma malha de 22\textit{x}10 quadrados (com as duas linhas do topo ocultas ao jogador), onde o jogador deve ir encaixando as peças (os "Tetraminós") que caem verticalmente no tabuleiro em uma sequência aleatória. Existem 7 tipos de Tetraminós, cada um formato distinto. O objetivo do jogador é manipular essas peças, movendo-as horizontalmente e girando-as de forma a criar uma linha horizontal no tabuleiro sem espaços vazios. Quando uma linha assim é completa, ela é destruída, as peças acima dela "caem" uma linha para baixo e o jogador pontua.
+
+Conforme as linhas vão sendo limpas, o jogador avança entre níveis mais difíceis. A cada nível, as peças caem mais rapidamente, exigindo um tempo de resposta cada vez menor do jogador. O jogo acaba quando alguma peça, por falta de espaço no tabuleiro, fica com alguma parte posicionada fora do tabuleiro (acima da linha 22).
+
 \begin{center}
 \includegraphics[scale=0.5]{tetris_nes.png}\\
 
@@ -88,7 +92,7 @@ Um algoritmo genético é uma técnica para encontrar uma solução ideal ou pr�
 Rede neural artificial é uma coleção de unidades chamadas neurônios que são interligados entre si com uma ordem (camadas), com inspiração biológica no funcionamento do cérebro dos animais. Cada neurônio de uma camada se liga a todos os neurônios da anterior (se não for a camada de entrada) e da posterior (se não for a camada de saída). Cada neurônio é ativado de acordo com uma função de ativação, os parâmetros dessa função de ativação são as saídas dos neurônios anteriores multiplicados por um peso nas arestas que conectam estes neurônios. Nos neurônios de entrada são inseridos metadados e nas funções de saída algum tipo de resposta ou classificação \cite{b4}.\\
 
 \subsection{Aprendizado de máquina para jogos eletrônicos}
-Aprendizado de máquinas aplicado em jogos eletrônicos vem sendo estudado pela academia como forma de avaliar a capacidade da máquina de executar tão bem quantas tarefas complexas, como é o caso de jogar videogames. Um estudo em destaque é o caso do AlphaGo, uma inteligência artificial que usa técnicas de aprendizado profundo e conseguiu vencer o campeão mundial do jogo Go \cite{b5}. Alguns desses estudos utilizam a técnica de algortimos genéticos para encontrar um modelo computacional adequado para o jogo, e acabaram gerando modelos que são compatíveis com jogadores reais, em jogos como Snake \cite{b6} e Counter-Strike \cite{b7}. Nesses jogos, parâmetros como pontuação do jogador e desempenho estratégico são usados como função de custo para treinar o algoritmo.
+Aprendizado de máquinas aplicado em jogos eletrônicos vem sendo estudado pela academia como forma de avaliar a capacidade da máquina de executar tão bem quantas tarefas complexas, como é o caso de jogar videogames. Um estudo em destaque é o caso do AlphaGo, uma inteligência artificial que usa técnicas de aprendizado profundo e conseguiu vencer o campeão mundial do jogo Go \cite{b5}. Alguns desses estudos utilizam a técnica de algortimos genéticos para encontrar um modelo computacional adequado para o jogo, e acabaram gerando modelos que são compatíveis com o desempenho de jogadores reais, em jogos como Snake \cite{b6} e Counter-Strike \cite{b7}. Nesses jogos, parâmetros como pontuação do jogador e desempenho estratégico são usados como função de custo para treinar o algoritmo.
 
 \subsection{Trabalhos relacionados}
 Em \cite{b8}, o autor cria uma rede neural para jogar Tetris, usando algoritmos genéticos para otimizar os pesos dos neurônios (substituindo o \textit{backpropagation}). O jogador pontua ao descer peças no tabuleiro e completar linhas. A função de custo é composta por: número de linhas completadas, altura máxima, altura acumulada, altura relativa, buracos das linhas e completude do tabuleiro. Durante o jogo, a cada nova peça, todas as jogadas possíveis são testadas e a que retornar a melhor pontuação (seguindo as heurísticas acima) é executada.
@@ -102,12 +106,36 @@ Para treinamento das redes neurais, foi utilizada a versão com OpenCL\cite{b11}
 
 
 \section{Metodologia}
+Para treinarmos nosso algoritmo, utilizamos redes neurais artificiais. Como em \cite{b8}, substituímos a parte do \textit{backpropagation} pelo algoritmo genético. Nosso \textit{crossover}, além de pegar os indivíduos mais bem sucedidos, pega algumas amostras dos mal sucedidos, para aumentar a variabilidade genética. Além disso, casa peso dos neurônios tem 30\% de chance de ter seu valor alterado pela soma de algum valor aleatório, que seria nossa mutação.   Porém, diferentemente dos outros trabalhos, a saída da nossa rede é composta por: qual das 10 colunas a peça deve ser posicionada e em qual das 4 rotações possíveis. Dessa forma, pretendíamos reduzir o custo computacional de simular todas as jogadas possíveis e ser uma saída mais próxima do que um jogador humano faria. A entrada da nossa rede era, inicialmente, 221 neurônios representando o tabuleiro de 22x10 linearizado, onde um neurônio ativado indicava que havia alguma peça ocupando aquela posição e um neurônio para indicar qual o \textit{id} da peça a ser colocada. Essa entrada tinha como objetivo ser mais parecida com o que um humano recebe ao olhar para o tabuleiro.
 
-\section{Resultados}
+Para comparar o desempenho do modelo com jogadores humanos, coletamos dados de 50 jogos: pedimos que 10 pessoas jogassem 5 vezes a mesma implementação de Tetris escolhida para nossos experimentos. Com isso, obtivemos que, antes de perder o jogo, um humano chega em média ao level 5, fazendo 40 linhas e um score de 70.
+
+Nossa função de custo escolhida foi o número de linhas completadas e o score do jogo modificado. Além da pontuação normalmente gratificada quando uma linha é limpa (4 pontos), o jogador também era pontuado quando colocava peças no tabuleiro. Quando mais "fundo" a peça estivesse no tabuleiro, maior era seu bônus. Porém, se a peça fosse colocada a cima da metade do tabuleiro, quanto mais alta ela fosse colocada, mais ele era penalizado. Ao ordenar os indivíduos para a escolha do crossover, primeiro eles eram ordenados pelo número de linhas completadas e, em cada conjunto de indivíduos que completaram a mesma linha, eram ordenados pela pontuação. Dessa forma, a função de custo deveria escolher os indivíduos que mais inserissem peças ao fundo do tabuleiro, causando assim uma maior alocação de peças na base e, consequentemente, mais linhas concluídas e mais distante do topo (onde o jogo é finalizado).
+
+Modificamos o código-fonte do jogo de forma que ele posicionasse as peças na coluna indicada e com a rotação indicada. A cada peça colocada, a rede recebia a entrada do tabuleiro e retornava uma nova configuração de coluna/rotação. Cada rede jogava o jogo até perder dez vezes, e cada geração continha 10 indivíduos. Ao final dos 100 jogos, o crossover era utilizado para gerar a próxima geração.
+
+\section{Experimentos e Resultados}
+No nosso primeiro teste, utilizamos o jogo de Tetris com todas as peças do jogo e uma variedade de configurações de rede neural (mudando o número de camadas, neurônios por camadas e função de ativação). Nenhuma rede, mesmo após 200 gerações evolutivas, conseguia completar mais de uma linha por jogo nem demonstrar algum avanço. Para testar a viabilidade do modelo, mudamos o jogo para um modelo mais simples, com apenas peças de 1x1 e um tabuleiro de 10x10. A configuração de rede escolhida para seguir com o treinamento foi
+
+\begin{center}
+\includegraphics[scale=0.3]{tetris_simples.png}\\
+
+\textbf{Figura 2:} \textit{Primeiro Tetris simplificado utilizado nos experimentos}
+\end{center}
+
+A melhor configuração de rede neural obtida nesse cenário foi uma rede com três camadas. A camada de entrada tem 22 neurônios: 1 com um identificador da peça, 10 com a altura de cada coluna, 9 com a diferença de altura entre cada par de colunas adjacentes e 1 com a maior diferença entre alturas. A camada oculta contem 100 neurônios.
+A saída da rede, com 15 neurônios, indica qual das 10 colunas a peça deve ser colocada e qual a rotação dela. Depois de 12 gerações, a rede conseguiu jogar o jogo "infinitamente". Ele completava linhas sequencialmente, da mesma forma, sem fim. Um fato curioso nessa etapa do treinamento foi que a rede se aproveitou de um \textit{bug} que permitia completar linhas com muitos menos movimentos, que não era conhecido pelos desenvolvedores. Após corrigir o \textit{bug}, a rede foi retreinada e o jogo obteve 
 
 \section{Conclusão}
 
+
+
 \section{Estudos futuros}
+Para melhorar os resultados de nossa abordagem, serão necessários novos estudos em relação a nossa rede. Uma das alternativas a ser testada é o uso de redes convulacionais \cite{b15}. Esse tipo de rede é utilizado principalmente com problemas relacionados à imagens, porque ela mantem informações importantes da localização entre pixels. Dessa forma, a rede não recebe apenas a matriz de pixels linearizada, mas consegue criar uma relação entre os pixels vizinhos. Isso é importante para o tabuleiro do jogo, já que pontos com/sem peça só fazem sentido se tivermos informações dos vizinhos.
+
+\section{Código e dados}
+Todo o código do experimento pode ser encontrado em:\\
+ \texttt{\url{https://github.com/andrealmeid/AutoTetris}}
 
 \begin{thebibliography}{00}
 
@@ -138,6 +166,8 @@ Para treinamento das redes neurais, foi utilizada a versão com OpenCL\cite{b11}
 \bibitem{b13} \texttt{\url{http://luajit.org/luajit.html}}
 
 \bibitem{b14} \texttt{\url{https://github.com/tylerneylon/termtris}}
+
+\bibitem{b15} LeCun, Y. (2015). LeNet-5, convolutional neural networks. URL: http://yann. lecun. com/exdb/lenet.
 
 \end{thebibliography}
 

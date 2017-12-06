@@ -2602,7 +2602,7 @@
 \def\contentsname{Contents}
 \def\listfigurename{List of Figures}
 \def\listtablename{List of Tables}
-\def\refname{References}
+\def\refname{Referencias}
 \def\indexname{Index}
 \def\figurename{Fig.}
 \def\tablename{TABLE}
