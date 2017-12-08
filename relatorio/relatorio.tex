@@ -146,7 +146,15 @@ Utilizamos redes neurais artificiais para fazer as jogadas automaticamentes. Com
 
 Para comparar o desempenho do modelo com jogadores humanos, coletamos dados de 50 jogos: pedimos que 10 pessoas jogassem 5 vezes a mesma implementação de Tetris escolhida para nossos experimentos. Com isso, obtivemos que, antes de perder o jogo, um humano chega em média ao level 5, fazendo 40 linhas e um score de 70.
 
-Nossa função de custo escolhida foi o número de linhas completadas e o score do jogo modificado. Além da pontuação normalmente gratificada quando uma linha é limpa (4 pontos), o jogador também era pontuado quando colocava peças no tabuleiro. Quanto mais "fundo" a peça estivesse no tabuleiro, maior era seu bônus. Porém, se a peça fosse colocada a cima da metade do tabuleiro, quanto mais alta ela fosse colocada, mais ele era penalizado. Ao ordenar os indivíduos para a escolha do crossover, primeiro eles eram ordenados pelo número de linhas completadas e, em cada conjunto de indivíduos que completaram a mesma linha, eram ordenados pela pontuação. Dessa forma, a função de custo deveria escolher os indivíduos que mais inserissem peças ao fundo do tabuleiro, causando assim uma maior alocação de peças na base e, consequentemente, mais linhas concluídas e mais distante do topo (onde o jogo é finalizado).
+Tentamos várias funções de custos, iniciando como somente o número de linhas limpadas na média de dez jogos e a pontuação padrão do Tetris como critério de desempate, porém logo percebemos que essa função insentivava as redes a somente espalharem as peças mais do que realmente limparem linhas.
+
+Dessa forma uma nova função de custo foi formulada, na qual quanto mais "fundo" a peça estivesse no tabuleiro, mais pontos ela valia. Porém, se a peça fosse colocada a cima da metade do tabuleiro, quanto mais alta ela fosse colocada, mais ele era penalizado. Neste caso tivemos problemas com pontuações negativas, o que levava em alguns casos a escolha errada das melhores redes.
+
+Finalmete, a função escolhida foi a qual cada peça vale mais pontos se colocada mais no fundo, porém essa pontuação é então dividida pela altura da maior torre atual no jogo, o que leva a rede a espalhar mais as suas peças, mas também incentiva ela a construir torres menores, o que por consequência a limpar mais linhas.
+
+Ao ordenar os indivíduos para a escolha do crossover, primeiro eles eram ordenados pelo número de linhas completadas e, em cada conjunto de indivíduos que completaram a mesma linha, eram ordenados pela pontuação. Dessa forma, a função de custo deveria escolher os indivíduos que mais inserissem peças ao fundo do tabuleiro, causando assim uma maior alocação de peças na base e, consequentemente, mais linhas concluídas e mais distante do topo (onde o jogo é finalizado).
+
+Entretanto para a versão final da função de custo, passamos a ordenar as redes somente pela pontuação, pois percebemos que a ordenação por linhas causava a algumas boas redes que fossem eliminadas por má sorte.
 
 Modificamos o código-fonte do jogo de forma que ele posicionasse as peças na coluna indicada e com a rotação indicada. A cada peça colocada, a rede recebia a entrada do tabuleiro e retornava uma nova configuração de coluna/rotação. Cada rede jogava o jogo até perder 10 vezes, e cada geração continha 10 indivíduos. Ao final dos 100 jogos, o crossover era utilizado para gerar a próxima geração.
 
@@ -155,12 +163,19 @@ A partir disto, fizemos experimentos e conforme os resultados, fazíamos as modi
 \section{Experimentos e Resultados}
 No nosso primeiro teste, utilizamos o jogo de Tetris com todas as peças do jogo e uma variedade de configurações de rede neural (mudando o número de camadas, neurônios por camadas e função de ativação). Nenhuma rede, mesmo após 200 gerações evolutivas, conseguia completar mais de uma linha por jogo nem demonstrar algum avanço. 
 
+
+\begin{center}
+\includegraphics[scale=0.2]{tetris_lose.png}\\
+
+\textbf{Figura 2:} \textit{Amostra da rede jogando Tetris nos primeiros experimentos}
+\end{center}
+
 Para testar a viabilidade do modelo, de forma a verificarmos de o modelo funcionaria em outras condições, mudamos o jogo para um modelo mais simples, com apenas peças de 1x1 e um tabuleiro de 10x10.
 
 \begin{center}
 \includegraphics[scale=0.3]{tetris_simples.png}\\
 
-\textbf{Figura 2:} \textit{Primeiro Tetris simplificado utilizado nos experimentos}
+\textbf{Figura 3:} \textit{Primeiro Tetris simplificado utilizado nos experimentos}
 \end{center}
 
 A melhor configuração de rede neural obtida nesse cenário foi uma rede com três camadas. A camada de entrada original foi modificada para uma com 22 neurônios:  
@@ -179,19 +194,25 @@ A partir deste cenário, utilizamos \textit{transfer learning}. Esse conceito é
 \begin{center}
 \includegraphics[scale=0.3]{tetris_simples2.png}\\
 
-\textbf{Figura 3:} \textit{Segundo Tetris simplificado}
+\textbf{Figura 4:} \textit{Segundo Tetris simplificado}
 \end{center}
 
 Utilizando a mesma rede que conseguia ganhar no Tetris anterior, testamos nesse novo modelo. O \textit{transfer learning} funcionou e na próxima geração a rede já conseguia completar as linhas sem fim.
 
-Contudo, a rede novamente não conseguia jogar com modelos mais complexos a partir da rede treinada nos modelos anteriores. Ao inserirmos ambas as formas, 1x1 e 2x1, a rede não conseguia avançar e novamente limpava apenas uma linha por jogo na média. 
+Contudo, a rede novamente não conseguia jogar com modelos mais complexos a partir da rede treinada nos modelos anteriores. Ao inserirmos ambas as formas, 1x1 e 2x1, a rede não conseguia avançar e novamente limpava apenas uma linha por jogo na média. Para tentar contorna esse problema, fizemos novamente um teste com apenas uma peça, mas, dessa vez, uma mais complexa. Essa nova peça é uma "combinação" das duas peças anteriores, em um formato de \textit{L}. Contudo, a rede tentava aplicar as mesmas técnicas de antes, sem explorar as rotações ou fazendo-as de forma sem sentido. Em um jogo que precisava mais do que apenas lógica para o posicionamento, mas também lógica para rotação, a rede não obteve sucesso.
+
+\begin{center}
+\includegraphics[scale=0.3]{tetris_lose2.png}\\
+
+\textbf{Figura 5:} \textit{Rede jogando o quarto Tetris simplificado proposto}
+\end{center}
 
 Ao analisarmos a saída da rede, constatamos que as redes que eram bem sucedidas nas versões simplificadas faziam apenas dois movimentos, usando apenas duas das dez posições disponíveis. A rede jogava todas as peças para a coluna mais à esquerda, depois para a mais a direita e, quando ambos lados estiverem concluídos, a rede posiciona uma peça na coluna central, limpando uma linha. Isso é possível porque, no jogo, existe um sistema de colisão. Quando uma peça tenta atingir uma posição já ocupada do tabuleiro, ela não consegue avançar lateralmente. Dessa forma, a rede consegue completar duas metades do tabuleiro apenas ordenando que as peças vão para a posição mais remota possível.
 
 \begin{center}
 \includegraphics[scale=0.3]{tetris_win.png}\\
 
-\textbf{Figura 4:} \textit{Rede prestes a limpar uma linha seguindo seu algoritmo}
+\textbf{Figura 6:} \textit{Rede prestes a limpar uma linha seguindo seu algoritmo}
 \end{center}
 
 
