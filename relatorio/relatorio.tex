@@ -48,7 +48,7 @@ Tetris é um jogo eletrônico criado em 1984 pelo matemático soviético Alexey 
 
 No Tetris, o "tabuleiro" do jogo é formado por uma malha de 22\textit{x}10 quadrados (com as duas linhas do topo ocultas ao jogador), onde o jogador deve ir encaixando as peças (os "Tetraminós") que caem verticalmente no tabuleiro em uma sequência aleatória. Existem 7 tipos de Tetraminós, cada um formato distinto. O objetivo do jogador é manipular essas peças, movendo-as horizontalmente e girando-as de forma a criar uma linha horizontal no tabuleiro sem espaços vazios. Quando uma linha assim é completa, ela é destruída, as peças acima dela "caem" uma linha para baixo e o jogador pontua.
 
-Conforme as linhas vão sendo limpas, o jogador avança entre níveis mais difíceis. A cada nível, as peças caem mais rapidamente, exigindo um tempo de resposta cada vez menor do jogador. O jogo acaba quando alguma peça, por falta de espaço no tabuleiro, fica com alguma parte posicionada fora do tabuleiro (acima da linha 22).
+Conforme as linhas vão sendo limpas, o jogador avança entre níveis mais difíceis. A cada nível, as peças caem mais rapidamente, exigindo um tempo de resposta cada vez maior do jogador. O jogo acaba quando alguma peça, por falta de espaço no tabuleiro, fica com alguma parte posicionada fora do tabuleiro (acima da linha 22).
 
 \begin{center}
 \includegraphics[scale=0.5]{tetris_nes.png}\\
@@ -72,7 +72,7 @@ Foi provado \cite{b2} que em uma versão de Tetris onde o jogador já conhece to
 Com exceção do terceiro, todos esses objetivos também são difíceis de serem aproximados. 
 
 \subsection{Algoritmos genéticos}
-Um algoritmo genético é uma técnica para encontrar uma solução ideal ou próxima à ideal para um problema computacional, com inspirações nas teorias darwinistas de evolução dos seres vivos. As interações do algoritmo são sobre as gerações, onde uma geração é um conjuto de indivíduos e indivíduos são funções/modelos. Em síntese, um algoritmo genético funciona da seguinte maneira \cite{b3}:
+Um algoritmo genético é uma técnica para encontrar uma solução ideal ou próxima à ideal para um problema computacional, com inspirações nas teorias darwinistas de evolução dos seres vivos. As iterações do algoritmo são sobre as gerações, onde uma geração é um conjuto de indivíduos e indivíduos são funções/modelos. Em síntese, um algoritmo genético funciona da seguinte maneira \cite{b3}:
 
 \begin{enumerate}
 \item Os parâmetros dos indivíduos da primeira geração são gerados randomicamente;
@@ -95,27 +95,67 @@ Rede neural artificial é uma coleção de unidades chamadas neurônios que são
 Aprendizado de máquinas aplicado em jogos eletrônicos vem sendo estudado pela academia como forma de avaliar a capacidade da máquina de executar tão bem quantas tarefas complexas, como é o caso de jogar videogames. Um estudo em destaque é o caso do AlphaGo, uma inteligência artificial que usa técnicas de aprendizado profundo e conseguiu vencer o campeão mundial do jogo Go \cite{b5}. Alguns desses estudos utilizam a técnica de algortimos genéticos para encontrar um modelo computacional adequado para o jogo, e acabaram gerando modelos que são compatíveis com o desempenho de jogadores reais, em jogos como Snake \cite{b6} e Counter-Strike \cite{b7}. Nesses jogos, parâmetros como pontuação do jogador e desempenho estratégico são usados como função de custo para treinar o algoritmo.
 
 \subsection{Trabalhos relacionados}
-Em \cite{b8}, o autor cria uma rede neural para jogar Tetris, usando algoritmos genéticos para otimizar os pesos dos neurônios (substituindo o \textit{backpropagation}). O jogador pontua ao descer peças no tabuleiro e completar linhas. A função de custo é composta por: número de linhas completadas, altura máxima, altura acumulada, altura relativa, buracos das linhas e completude do tabuleiro. Durante o jogo, a cada nova peça, todas as jogadas possíveis são testadas e a que retornar a melhor pontuação (seguindo as heurísticas acima) é executada.
+Em \cite{b8}, o autor cria uma rede neural para jogar Tetris, usando algoritmos genéticos para otimizar os pesos dos neurônios (substituindo o \textit{backpropagation}). O jogador pontua ao descer peças no tabuleiro e completar linhas. A função de custo é composta por:
 
-No trabalho \cite{b9}, o autor utiliza uma função com as heurísticas: altura agregada, linhas completadas, buracos e diferença de alturas vizinhas. Novamente, todas as jogadas possíveis são testadas e a que retornar o maior valor é executada. A função utilizada é a soma do produto das heurísticas com uma variável de valor inicialmente desconhecido. Os pesos de cada uma das heurísticas foi determinado usando algoritmos genéticos. 
+\begin{itemize}
+\item número de linhas completadas;
+\item altura máxima, altura acumulada;
+\item altura relativa, buracos das linhas;
+\item completude do tabuleiro.
+\end{itemize}
 
-No artigo \cite{b10}, as autoras utilizam uma metodologia semelhante à vista em \cite{b9}, só que com as seguintes heurísticas: maior pilha, buracos, buracos conectados, linhas removidas, diferença de altitude, profundidade máxima, soma dos vales, altura do último tetraminó, número de células ocupadas, número de células ocupadas por coluna, soma de transições ocupadas/desocupadas horizontalmente e verticalmente. A função de custo é dado por $\sum_{i=1}^n  w_{i}|r_{i}(b)-d_{i} | ^{e_{i}}$, onde $r_{i}(b)$ é o valor retornado por cada uma das heurísticas e os valores de $w_i$, $d_i$ e $e_i$ foram descobertos utilizando algoritmos genéticos.
+Durante o jogo, a cada nova peça, todas as jogadas possíveis são testadas e a que retornar a melhor pontuação (seguindo as heurísticas acima) é executada.
+
+No trabalho \cite{b9}, o autor utiliza uma função com as heurísticas: 
+
+\begin{itemize}
+\item altura agregada;
+\item linhas completadas;
+\item buracos;
+\item diferença de alturas vizinhas.
+\end{itemize}
+
+Novamente, todas as jogadas possíveis são testadas e a que retornar o maior valor é executada. A função utilizada é a soma do produto das heurísticas com uma variável de valor inicialmente desconhecido. Os pesos de cada uma das heurísticas foi determinado usando algoritmos genéticos. 
+
+No artigo \cite{b10}, as autoras utilizam uma metodologia semelhante à vista em \cite{b9}, porém com as seguintes heurísticas: 
+
+\begin{itemize}
+\item maior pilha; 
+\item buracos;
+\item buracos conectados;
+\item linhas removidas;
+\item diferença de altitude;
+\item profundidade máxima;
+\item soma dos vales;
+\item altura do último tetraminó; 
+\item número de células ocupadas;
+\item número de células ocupadas por coluna;
+\item soma de transições ocupadas/desocupadas horizontalmente e verticalmente. 
+\end{itemize}
+
+A função de custo é dado por $\sum_{i=1}^n  w_{i}|r_{i}(b)-d_{i} | ^{e_{i}}$, onde $r_{i}(b)$ é o valor retornado por cada uma das heurísticas e os valores de $w_i$, $d_i$ e $e_i$ foram descobertos utilizando algoritmos genéticos.
 
 \subsection{Tecnologias empregadas}
 Para treinamento das redes neurais, foi utilizada a versão com OpenCL\cite{b11} do Torch\cite{b12}, um framework de computação cientifica para LuaJIT\cite{b13}. Reutilizamos o Tetris feito em \cite{b14}, devido a simplicidade (o jogo é executado em um emulador de terminal), boa documentação e porque foi escrito em Lua, facilitando a integração dos dois programas e a modificação do jogo.
 
+\subsection{Abordando o problema}
+A partir disso, decidimos explorar o uso de redes neurais artificias combinadas com algoritmos genéticos com entradas/saídas diferentes dos outros trabalhos citados para chegarmos em resultados melhores.
 
 \section{Metodologia}
-Para treinarmos nosso algoritmo, utilizamos redes neurais artificiais. Como em \cite{b8}, substituímos a parte do \textit{backpropagation} pelo algoritmo genético. Nosso \textit{crossover}, além de pegar os indivíduos mais bem sucedidos, pega algumas amostras dos mal sucedidos, para aumentar a variabilidade genética. Além disso, casa peso dos neurônios tem 30\% de chance de ter seu valor alterado pela soma de algum valor aleatório, que seria nossa mutação.   Porém, diferentemente dos outros trabalhos, a saída da nossa rede é composta por: qual das 10 colunas a peça deve ser posicionada e em qual das 4 rotações possíveis. Dessa forma, pretendíamos reduzir o custo computacional de simular todas as jogadas possíveis e ser uma saída mais próxima do que um jogador humano faria. A entrada da nossa rede era, inicialmente, 221 neurônios representando o tabuleiro de 22x10 linearizado, onde um neurônio ativado indicava que havia alguma peça ocupando aquela posição e um neurônio para indicar qual o \textit{id} da peça a ser colocada. Essa entrada tinha como objetivo ser mais parecida com o que um humano recebe ao olhar para o tabuleiro.
+Utilizamos redes neurais artificiais para fazer as jogas automaticamentes. Como em \cite{b8}, substituímos a parte do \textit{backpropagation} pelo algoritmo genético. Nosso \textit{crossover}, além de pegar os indivíduos mais bem sucedidos, pega algumas amostras dos mal sucedidos, para aumentar a variabilidade genética. Além disso, casa peso dos neurônios tem 30\% de chance de ter seu valor alterado pela soma de algum valor aleatório, que seria nossa mutação.   Porém, diferentemente dos outros trabalhos, a saída da nossa rede é composta por 14 neurônios: qual das 10 colunas a peça deve ser posicionada e em qual das 4 rotações possíveis. Dessa forma, pretendíamos reduzir o custo computacional de simular todas as jogadas possíveis e ser uma saída mais próxima do que um jogador humano faria. A entrada da nossa rede era, inicialmente, 221 neurônios representando o tabuleiro de 22x10 linearizado, onde um neurônio ativado indicava que havia alguma peça ocupando aquela posição e um neurônio para indicar qual o \textit{id} da peça a ser colocada. Essa entrada tinha como objetivo ser mais parecida com o que um humano recebe ao olhar para o tabuleiro.
 
 Para comparar o desempenho do modelo com jogadores humanos, coletamos dados de 50 jogos: pedimos que 10 pessoas jogassem 5 vezes a mesma implementação de Tetris escolhida para nossos experimentos. Com isso, obtivemos que, antes de perder o jogo, um humano chega em média ao level 5, fazendo 40 linhas e um score de 70.
 
-Nossa função de custo escolhida foi o número de linhas completadas e o score do jogo modificado. Além da pontuação normalmente gratificada quando uma linha é limpa (4 pontos), o jogador também era pontuado quando colocava peças no tabuleiro. Quando mais "fundo" a peça estivesse no tabuleiro, maior era seu bônus. Porém, se a peça fosse colocada a cima da metade do tabuleiro, quanto mais alta ela fosse colocada, mais ele era penalizado. Ao ordenar os indivíduos para a escolha do crossover, primeiro eles eram ordenados pelo número de linhas completadas e, em cada conjunto de indivíduos que completaram a mesma linha, eram ordenados pela pontuação. Dessa forma, a função de custo deveria escolher os indivíduos que mais inserissem peças ao fundo do tabuleiro, causando assim uma maior alocação de peças na base e, consequentemente, mais linhas concluídas e mais distante do topo (onde o jogo é finalizado).
+Nossa função de custo escolhida foi o número de linhas completadas e o score do jogo modificado. Além da pontuação normalmente gratificada quando uma linha é limpa (4 pontos), o jogador também era pontuado quando colocava peças no tabuleiro. Quanto mais "fundo" a peça estivesse no tabuleiro, maior era seu bônus. Porém, se a peça fosse colocada a cima da metade do tabuleiro, quanto mais alta ela fosse colocada, mais ele era penalizado. Ao ordenar os indivíduos para a escolha do crossover, primeiro eles eram ordenados pelo número de linhas completadas e, em cada conjunto de indivíduos que completaram a mesma linha, eram ordenados pela pontuação. Dessa forma, a função de custo deveria escolher os indivíduos que mais inserissem peças ao fundo do tabuleiro, causando assim uma maior alocação de peças na base e, consequentemente, mais linhas concluídas e mais distante do topo (onde o jogo é finalizado).
 
-Modificamos o código-fonte do jogo de forma que ele posicionasse as peças na coluna indicada e com a rotação indicada. A cada peça colocada, a rede recebia a entrada do tabuleiro e retornava uma nova configuração de coluna/rotação. Cada rede jogava o jogo até perder dez vezes, e cada geração continha 10 indivíduos. Ao final dos 100 jogos, o crossover era utilizado para gerar a próxima geração.
+Modificamos o código-fonte do jogo de forma que ele posicionasse as peças na coluna indicada e com a rotação indicada. A cada peça colocada, a rede recebia a entrada do tabuleiro e retornava uma nova configuração de coluna/rotação. Cada rede jogava o jogo até perder 10 vezes, e cada geração continha 10 indivíduos. Ao final dos 100 jogos, o crossover era utilizado para gerar a próxima geração.
+
+A partir disto, fizemos experimentos e conforme os resultados, fazíamos as modificações que julgávamos necessárias para melhorar a precisão de nossos modelos.
 
 \section{Experimentos e Resultados}
-No nosso primeiro teste, utilizamos o jogo de Tetris com todas as peças do jogo e uma variedade de configurações de rede neural (mudando o número de camadas, neurônios por camadas e função de ativação). Nenhuma rede, mesmo após 200 gerações evolutivas, conseguia completar mais de uma linha por jogo nem demonstrar algum avanço. Para testar a viabilidade do modelo, mudamos o jogo para um modelo mais simples, com apenas peças de 1x1 e um tabuleiro de 10x10. A configuração de rede escolhida para seguir com o treinamento foi
+No nosso primeiro teste, utilizamos o jogo de Tetris com todas as peças do jogo e uma variedade de configurações de rede neural (mudando o número de camadas, neurônios por camadas e função de ativação). Nenhuma rede, mesmo após 200 gerações evolutivas, conseguia completar mais de uma linha por jogo nem demonstrar algum avanço. 
+
+Para testar a viabilidade do modelo, de forma a verificarmos de o modelo funcionaria em outras condições, mudamos o jogo para um modelo mais simples, com apenas peças de 1x1 e um tabuleiro de 10x10.
 
 \begin{center}
 \includegraphics[scale=0.3]{tetris_simples.png}\\
@@ -123,8 +163,26 @@ No nosso primeiro teste, utilizamos o jogo de Tetris com todas as peças do jogo
 \textbf{Figura 2:} \textit{Primeiro Tetris simplificado utilizado nos experimentos}
 \end{center}
 
-A melhor configuração de rede neural obtida nesse cenário foi uma rede com três camadas. A camada de entrada tem 22 neurônios: 1 com um identificador da peça, 10 com a altura de cada coluna, 9 com a diferença de altura entre cada par de colunas adjacentes e 1 com a maior diferença entre alturas. A camada oculta contem 100 neurônios.
-A saída da rede, com 15 neurônios, indica qual das 10 colunas a peça deve ser colocada e qual a rotação dela. Depois de 12 gerações, a rede conseguiu jogar o jogo "infinitamente". Ele completava linhas sequencialmente, da mesma forma, sem fim. Um fato curioso nessa etapa do treinamento foi que a rede se aproveitou de um \textit{bug} que permitia completar linhas com muitos menos movimentos, que não era conhecido pelos desenvolvedores. Após corrigir o \textit{bug}, a rede foi retreinada e o jogo obteve 
+A melhor configuração de rede neural obtida nesse cenário foi uma rede com três camadas. A camada de entrada original foi modificada para um com 22 neurônios: 
+
+\begin{itemize}
+\item 1 com um identificador da peça;
+\item 10 com a altura de cada coluna;
+\item 9 com a diferença de altura entre cada par de colunas adjacentes;
+\item 1 com a maior diferença entre alturas.
+\end{itemize}
+
+A camada oculta contem 100 neurônios. A saída da rede, com 15 neurônios, indica qual das 10 colunas a peça deve ser colocada e qual a rotação dela. Depois de 12 gerações, a rede conseguiu jogar o jogo "infinitamente". Ele completava linhas sequencialmente, da mesma forma, sem fim. Um fato curioso nessa etapa do treinamento foi que a rede se aproveitou de um \textit{bug} que permitia completar linhas com muitos menos movimentos, que não era conhecido pelos desenvolvedores. Após corrigir o \textit{bug}, a rede foi retreinada e o jogo obteve o mesmo resultado de jogar infinitamente na geração 39.
+
+A partir deste cenário, utilizamos \textit{transfer learning}. Esse conceito é utilizado em redes neurais, como forma de reaproveitar alguma parte de uma neural já treinada para outro problema parecido. Mudamos o jogo para uma outra peça, de 2x1.
+
+\begin{center}
+\includegraphics[scale=0.3]{tetris_simples2.png}\\
+
+\textbf{Figura 3:} \textit{Segundo Tetris simplificado}
+\end{center}
+
+Utilizando a mesma rede que conseguia ganhar no Tetris anterior, testamos nesse novo.
 
 \section{Conclusão}
 
