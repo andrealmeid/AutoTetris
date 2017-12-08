@@ -30,13 +30,6 @@ local hiddenUnits = 100
 local shapesReset = {
       {
         {1}
-      },
-      {
-        {1,1},
-        {1,1}
-      },
-      {
-        {1,1}
       }
     }
 
