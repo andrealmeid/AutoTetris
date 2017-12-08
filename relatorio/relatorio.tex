@@ -142,7 +142,7 @@ Para treinamento das redes neurais, foi utilizada a versão com OpenCL\cite{b11}
 A partir disso, decidimos explorar o uso de redes neurais artificias combinadas com algoritmos genéticos com entradas/saídas diferentes dos outros trabalhos citados para chegarmos em resultados melhores.
 
 \section{Metodologia}
-Utilizamos redes neurais artificiais para fazer as jogas automaticamentes. Como em \cite{b8}, substituímos a parte do \textit{backpropagation} pelo algoritmo genético. Nosso \textit{crossover}, além de pegar os indivíduos mais bem sucedidos, pega algumas amostras dos mal sucedidos, para aumentar a variabilidade genética. Além disso, casa peso dos neurônios tem 30\% de chance de ter seu valor alterado pela soma de algum valor aleatório, que seria nossa mutação.   Porém, diferentemente dos outros trabalhos, a saída da nossa rede é composta por 14 neurônios: qual das 10 colunas a peça deve ser posicionada e em qual das 4 rotações possíveis. Dessa forma, pretendíamos reduzir o custo computacional de simular todas as jogadas possíveis e ser uma saída mais próxima do que um jogador humano faria. A entrada da nossa rede era, inicialmente, 221 neurônios representando o tabuleiro de 22x10 linearizado, onde um neurônio ativado indicava que havia alguma peça ocupando aquela posição e um neurônio para indicar qual o \textit{id} da peça a ser colocada. Essa entrada tinha como objetivo ser mais parecida com o que um humano recebe ao olhar para o tabuleiro.
+Utilizamos redes neurais artificiais para fazer as jogadas automaticamentes. Como em \cite{b8}, substituímos a parte do \textit{backpropagation} pelo algoritmo genético. Nosso \textit{crossover}, pega aleatoriamente os dez melhores indivíduos de cada população para cruzamento. Além disso, casa peso dos neurônios tem 30\% de chance de ter seu valor alterado pela soma de algum valor aleatório, que seria nossa mutação.   Porém, diferentemente dos outros trabalhos, a saída da nossa rede é composta por 14 neurônios: qual das 10 colunas a peça deve ser posicionada e em qual das 4 rotações possíveis. Dessa forma, pretendíamos reduzir o custo computacional de simular todas as jogadas possíveis e ser uma saída mais próxima do que um jogador humano faria. A entrada da nossa rede era, inicialmente, 221 neurônios representando o tabuleiro de 22x10 linearizado, onde um neurônio ativado indicava que havia alguma peça ocupando aquela posição e um neurônio para indicar qual o \textit{id} da peça a ser colocada. Essa entrada tinha como objetivo ser mais parecida com o que um humano recebe ao olhar para o tabuleiro.
 
 Para comparar o desempenho do modelo com jogadores humanos, coletamos dados de 50 jogos: pedimos que 10 pessoas jogassem 5 vezes a mesma implementação de Tetris escolhida para nossos experimentos. Com isso, obtivemos que, antes de perder o jogo, um humano chega em média ao level 5, fazendo 40 linhas e um score de 70.
 
@@ -163,7 +163,7 @@ Para testar a viabilidade do modelo, de forma a verificarmos de o modelo funcion
 \textbf{Figura 2:} \textit{Primeiro Tetris simplificado utilizado nos experimentos}
 \end{center}
 
-A melhor configuração de rede neural obtida nesse cenário foi uma rede com três camadas. A camada de entrada original foi modificada para um com 22 neurônios: 
+A melhor configuração de rede neural obtida nesse cenário foi uma rede com três camadas. A camada de entrada original foi modificada para uma com 22 neurônios: 
 
 \begin{itemize}
 \item 1 com um identificador da peça;
@@ -172,7 +172,7 @@ A melhor configuração de rede neural obtida nesse cenário foi uma rede com tr
 \item 1 com a maior diferença entre alturas.
 \end{itemize}
 
-A camada oculta contem 100 neurônios. A saída da rede, com 15 neurônios, indica qual das 10 colunas a peça deve ser colocada e qual a rotação dela. Depois de 12 gerações, a rede conseguiu jogar o jogo "infinitamente". Ele completava linhas sequencialmente, da mesma forma, sem fim. Um fato curioso nessa etapa do treinamento foi que a rede se aproveitou de um \textit{bug} que permitia completar linhas com muitos menos movimentos, que não era conhecido pelos desenvolvedores. Após corrigir o \textit{bug}, a rede foi retreinada e o jogo obteve o mesmo resultado de jogar infinitamente na geração 39.
+A camada oculta contem 100 neurônios. A saída da rede, com 14 neurônios, indica qual das 10 colunas a peça deve ser colocada e qual a rotação dela. Depois de 12 gerações, a rede conseguiu jogar o jogo "infinitamente". Ele completava linhas sequencialmente, da mesma forma, sem fim. Um fato curioso nessa etapa do treinamento foi que a rede se aproveitou de um \textit{bug} que permitia completar linhas com muitos menos movimentos, que não era conhecido pelos desenvolvedores. Após corrigir o \textit{bug}, a rede foi retreinada e o jogo obteve o mesmo resultado de jogar infinitamente na geração 39.
 
 A partir deste cenário, utilizamos \textit{transfer learning}. Esse conceito é utilizado em redes neurais, como forma de reaproveitar alguma parte de uma neural já treinada para outro problema parecido. Mudamos o jogo para uma outra peça, de 2x1.
 
