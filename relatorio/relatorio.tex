@@ -182,14 +182,27 @@ A partir deste cenário, utilizamos \textit{transfer learning}. Esse conceito é
 \textbf{Figura 3:} \textit{Segundo Tetris simplificado}
 \end{center}
 
-Utilizando a mesma rede que conseguia ganhar no Tetris anterior, testamos nesse novo.
+Utilizando a mesma rede que conseguia ganhar no Tetris anterior, testamos nesse novo modelo. O \textit{transfer learning} funcionou e na próxima geração a rede já conseguia completar as linhas sem fim.
+
+Contudo, a rede novamente não conseguia jogar com modelos mais complexos a partir da rede treinada nos modelos anteriores. Ao inserirmos ambas as formas, 1x1 e 2x1, a rede não conseguia avançar e novamente limpava apenas uma linha por jogo na média. 
+
+Ao analisarmos a saída da rede, constatamos que as redes que eram bem sucedidas nas versões simplificadas faziam apenas dois movimentos, usando apenas duas das dez posições disponíveis. A rede jogava todas as peças para a coluna mais à esquerda, depois para a mais a direita e, quando ambos lados estiverem concluídos, a rede posiciona uma peça na coluna central, limpando uma linha. Isso é possível porque, no jogo, existe um sistema de colisão. Quando uma peça tenta atingir uma posição já ocupada do tabuleiro, ela não consegue avançar lateralmente. Dessa forma, a rede consegue completar duas metades do tabuleiro apenas ordenando que as peças vão para a posição mais remota possível.
+
+\begin{center}
+\includegraphics[scale=0.3]{tetris_win.png}\\
+
+\textbf{Figura 4:} \textit{Rede prestes a limpar uma linha seguindo seu algoritmo}
+\end{center}
+
 
 \section{Conclusão}
-
+Segundo os resultados dos nossos experimentos, a rede falhou em aprender a jogar Tetris. Apesar de conseguir jogar jogos simplificados (com apenas uma peça), ela não posiciona as peças conforme as informações retirados do tabuleiro, apenas segue uma ordem de passos que irá obter sucesso, sem depender de dados do tabuleiro. Jogos com mais de uma peça não são determinísticos, já que as peças vem de forma aleatória. Nesse cenário, um algoritmo como o executado pela rede não funciona, já que peças diferentes requerem respostas diferentes. Já em um jogo com apenas uma peça, todos os passos de sucesso são determinísticos, já que a mesma peça virá sempre. Devido as muitas variações que os jogos não determinísticos oferecem, durante o treinamento dos indivíduos da população (as redes), eles, na prática, nunca encontravam o mesmo jogo, o que pode ser um fator que dificultava o aprendizado. A abordagem de simular todas as jogadas possíveis e fazer a que tem o melhor desempenho segundo a função de custo provavelmente contorna este problema, apesar de ser contrário a nossa proposta de resolução do problema. 
 
 
 \section{Estudos futuros}
-Para melhorar os resultados de nossa abordagem, serão necessários novos estudos em relação a nossa rede. Uma das alternativas a ser testada é o uso de redes convulacionais \cite{b15}. Esse tipo de rede é utilizado principalmente com problemas relacionados à imagens, porque ela mantem informações importantes da localização entre pixels. Dessa forma, a rede não recebe apenas a matriz de pixels linearizada, mas consegue criar uma relação entre os pixels vizinhos. Isso é importante para o tabuleiro do jogo, já que pontos com/sem peça só fazem sentido se tivermos informações dos vizinhos.
+Para melhorar os resultados de nossa abordagem, serão necessários novos estudos em relação a nossa rede. Uma das alternativas a ser testada é o uso de redes convulacionais \cite{b15}. Esse tipo de rede é utilizado principalmente com problemas relacionados à imagens, porque ela mantem informações importantes da localização entre pixels. Dessa forma, a rede não recebe apenas a matriz de pixels linearizada, mas consegue criar uma relação entre os pixels vizinhos. Isso é importante para o tabuleiro do jogo, já que pontos com/sem peça tem mais sentido sabendo as informações das casas vizinhas.
+
+Também devem ser testados novas escolhas de funções de custo, já que em nosso trabalho focamos na função \textit{sigmoid}.
 
 \section{Código e dados}
 Todo o código do experimento pode ser encontrado em:\\
