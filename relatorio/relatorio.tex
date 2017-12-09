@@ -187,7 +187,7 @@ A melhor configuração de rede neural obtida nesse cenário foi uma rede com tr
 \item 1 com a maior diferença entre alturas.
 \end{itemize}
 
-A camada oculta contem 100 neurônios. A saída da rede, com 14 neurônios, indica qual das 10 colunas a peça deve ser colocada e qual a rotação dela. Depois de 12 gerações, a rede conseguiu jogar o jogo "infinitamente". Ele completava linhas sequencialmente, da mesma forma, sem fim. Um fato curioso nessa etapa do treinamento foi que a rede se aproveitou de um \textit{bug} que permitia completar linhas com muitos menos movimentos, que não era conhecido pelos desenvolvedores. Após corrigir o \textit{bug}, a rede foi retreinada e o jogo obteve o mesmo resultado de jogar infinitamente na geração 39.
+A camada oculta contem 100 neurônios. Mantivemos apenas uma camada, pois a adição de mais camadas ocultas causou piora nos resultados do jogo. A saída da rede, com 14 neurônios, indica qual das 10 colunas a peça deve ser colocada e qual a rotação dela. Depois de 12 gerações, a rede conseguiu jogar o jogo "infinitamente". Ele completava linhas sequencialmente, da mesma forma, sem fim. Um fato curioso nessa etapa do treinamento foi que a rede se aproveitou de um \textit{bug} que permitia completar linhas com muitos menos movimentos, que não era conhecido pelos desenvolvedores. Após corrigir o \textit{bug}, a rede foi retreinada e o jogo obteve o mesmo resultado de jogar infinitamente na geração 39.
 
 A partir deste cenário, utilizamos \textit{transfer learning}. Esse conceito é utilizado em redes neurais, como forma de reaproveitar alguma parte de uma neural já treinada para outro problema parecido. Mudamos o jogo para uma outra peça, de 2x1.
 
@@ -227,6 +227,8 @@ Para melhorar os resultados de nossa abordagem, serão necessários novos estudo
 
 Também devem ser testados novas escolhas de funções de custo, já que em nosso trabalho focamos na função \textit{sigmoid}.
 
+Outra alternativa para a melhora da rede neural seria usar a o algoritmo \textit{NeuroEvolution of Augmenting Topologies} (NEAT)[16], que além de alterar os pesos dos neurônios da rede neural, ela "evolui" a rede, adicionando ou removendo neurônios seja de uma camada já existente, seja em uma nova, com ligações entre os neurônios. Essa rede usa um \textit{crossover} mais complexo para a reprodução das redes, o que torna sua implementação mais complicada e mais lenta, mas ela tem grande potencial de chegar em uma rede complexa e adaptada o suficiente para nosso problema.
+
 \section{Código e dados}
 Todo o código do experimento pode ser encontrado em:\\
  \texttt{\url{https://github.com/andrealmeid/AutoTetris}}
@@ -262,6 +264,8 @@ Todo o código do experimento pode ser encontrado em:\\
 \bibitem{b14} \texttt{\url{https://github.com/tylerneylon/termtris}}
 
 \bibitem{b15} LeCun, Y. (2015). LeNet-5, convolutional neural networks. URL: http://yann. lecun. com/exdb/lenet.
+
+\bibitem{b16} Stanley, K. O., \& Miikkulainen, R. (2002). Evolving neural networks through augmenting topologies. Evolutionary computation, 10(2), 99-127.
 
 \end{thebibliography}
 
