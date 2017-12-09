@@ -16,7 +16,7 @@ local torch = require 'torch'
 
 -- Neural networks settings
 local globalId = 0
-local inputSize = 24
+local inputSize = 22
 local hiddenUnits = 100
 
 ------------------------------------------------------------------
@@ -659,7 +659,7 @@ end
 local nnNum = 30
 local iterSize = #shapesReset > 1 and 5 or 1
 
-local file = io.open("saida", "w")
+local file = io.open("out", "w")
 
 local networks = generateNN(nnNum)
 local start = 1
