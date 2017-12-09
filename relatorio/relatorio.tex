@@ -215,6 +215,23 @@ Ao analisarmos a saída da rede, constatamos que as redes que eram bem sucedidas
 \textbf{Figura 6:} \textit{Rede prestes a limpar uma linha seguindo seu algoritmo}
 \end{center}
 
+Através da Figura 7, que representa a pontuação da população de redes jogando o Tetris simplificado com uma única peça 1x1 como na Figura 3, podemos perceber que o algoritmo evolutivo aplicado é efetivo na otimização dos pesos da rede, aumentando gradativamente a média de pontos da população até que há um \textit{breakthrough} por volta da iteração 50, na qual as redes começam a atingir o teto de linhas limpas por jogo, que no caso do experimento era 500, colocado para evitar que os jogos tendessem ao infinito.
+
+Também pode-se ver na mesma figura o algoritmo de mutação em funcionamento, já que a pontuação mínima de cada população varia pouco, mostrando que as novas redes geradas a partir das melhores redes, em sua maioria, geravam indivíduos que jogavam mal por conta de mutações ruins.
+
+\begin{center}
+\includegraphics[scale=0.55]{tetris_graph.png}\\
+
+\textbf{Figura 7:} \textit{Evolução da pontuação das populações durante sessenta iterações}
+\end{center}
+
+Utilizando a Figura 8, percebemos também como a partir do \textit{breakthrough}, mesmo com uma rede conseguindo sempre as 500 linhas máximos e mantendo uma pontuação em torno dos 67000 pontos, a evolução continua já que a média continua a subir, mostrando que mais e mais redes da população estão conseguindo a pontuação máxima, cada uma utilizando uma estratégia diferente da outra.
+
+\begin{center}
+\includegraphics[scale=0.55]{tetris_graph1.png}\\
+
+\textbf{Figura 8:} \textit{Pontuação média das populações durante sessenta iterações}
+\end{center}
 
 \section{Conclusão}
 Segundo os resultados dos nossos experimentos, a rede falhou em aprender a jogar Tetris. Apesar de conseguir jogar jogos simplificados (com apenas uma peça), ela não posiciona as peças conforme as informações retirados do tabuleiro, apenas segue uma ordem de passos que irá obter sucesso, sem depender de dados do tabuleiro. Jogos com mais de uma peça não são determinísticos, já que as peças vem de forma aleatória. Nesse cenário, um algoritmo como o executado pela rede não funciona, já que peças diferentes requerem respostas diferentes. Já em um jogo com apenas uma peça, todos os passos de sucesso são determinísticos, já que a mesma peça virá sempre. Devido as muitas variações que os jogos não determinísticos oferecem, durante o treinamento dos indivíduos da população (as redes), eles, na prática, nunca encontravam o mesmo jogo, o que pode ser um fator que dificultava o aprendizado. A abordagem de simular todas as jogadas possíveis e fazer a que tem o melhor desempenho segundo a função de custo provavelmente contorna este problema, apesar de ser contrário a nossa proposta de resolução do problema. 
