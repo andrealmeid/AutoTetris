@@ -1,4 +1,5 @@
-\documentclass[conference]{IEEEtran}
+\documentclass[conference, 11pt]{IEEEtran}
+%\documentclass[11pt]{IEEEtran}
 \IEEEoverridecommandlockouts
 % The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
 %\usepackage{cite}
@@ -46,15 +47,15 @@ Nesse projeto, foi proposta e experimentada uma abordagem para a criação de um
 \subsubsection{O jogo}
 Tetris é um jogo eletrônico criado em 1984 pelo matemático soviético Alexey Pazhitnov, tendo obtido grande popularidade principalmente nas plataformas \textit{Atari  ST} e no \textit{Nintendo Entertainment System} \cite{b1}. Até hoje, já foram vendidas mais de 50 milhões de cópias mundialmente. O jogo é do gênero \textit{puzzle}, onde o jogador precisa resolver algum tipo de quebra-cabeça.
 
-No Tetris, o "tabuleiro" do jogo é formado por uma malha de 22\textit{x}10 quadrados (com as duas linhas do topo ocultas ao jogador), onde o jogador deve ir encaixando as peças (os "Tetraminós") que caem verticalmente no tabuleiro em uma sequência aleatória. Existem 7 tipos de Tetraminós, cada um formato distinto. O objetivo do jogador é manipular essas peças, movendo-as horizontalmente e girando-as de forma a criar uma linha horizontal no tabuleiro sem espaços vazios. Quando uma linha assim é completa, ela é destruída, as peças acima dela "caem" uma linha para baixo e o jogador pontua.
-
-Conforme as linhas vão sendo limpas, o jogador avança entre níveis mais difíceis. A cada nível, as peças caem mais rapidamente, exigindo um tempo de resposta cada vez maior do jogador. O jogo acaba quando alguma peça, por falta de espaço no tabuleiro, fica com alguma parte posicionada fora do tabuleiro (acima da linha 22).
-
 \begin{center}
 \includegraphics[scale=0.5]{tetris_nes.png}\\
 
 \textbf{Figura 1:} \textit{captura de tela da versão} NES \textit{do jogo}
 \end{center}
+
+No Tetris, o "tabuleiro" do jogo é formado por uma malha de 22\textit{x}10 quadrados (com as duas linhas do topo ocultas ao jogador), onde o jogador deve ir encaixando as peças (os "Tetraminós") que caem verticalmente no tabuleiro em uma sequência aleatória. Existem 7 tipos de Tetraminós, cada um formato distinto. O objetivo do jogador é manipular essas peças, movendo-as horizontalmente e girando-as de forma a criar uma linha horizontal no tabuleiro sem espaços vazios. Quando uma linha assim é completa, ela é destruída, as peças acima dela "caem" uma linha para baixo e o jogador pontua.
+
+Conforme as linhas vão sendo limpas, o jogador avança entre níveis mais difíceis. A cada nível, as peças caem mais rapidamente, exigindo um tempo de resposta cada vez maior do jogador. O jogo acaba quando alguma peça, por falta de espaço no tabuleiro, fica com alguma parte posicionada fora do tabuleiro (acima da linha 22).
 
 \subsubsection{Complexidade computacional}
 Foi provado \cite{b2} que em uma versão de Tetris onde o jogador já conhece toda a sequência de peças que virão, os seguinte objetivos são problemas NP-Completos:
